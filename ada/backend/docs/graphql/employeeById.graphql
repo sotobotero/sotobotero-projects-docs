@@ -1,0 +1,21 @@
+# Pega este query en GraphiQL: http://localhost:8080/ADA_ENTERPISE_CORE/graphiql
+
+query ById($id: ID!) {
+  employeeById(id: $id) {
+    id
+    externalId
+    documentNumber
+    firstName
+    firstLastName
+    fullName
+    mainEmail
+    role
+    statusId
+    typeId
+  }
+}
+
+# Variables:
+# {
+#   "id": "1"
+# }

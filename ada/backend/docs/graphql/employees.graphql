@@ -1,0 +1,16 @@
+# Pega este query en GraphiQL: http://localhost:8080/ADA_ENTERPISE_CORE/graphiql
+
+query Employees {
+  employees(limit: 20, offset: 0) {
+    id
+    externalId
+    documentNumber
+    firstName
+    firstLastName
+    fullName
+    mainEmail
+    role
+    statusId
+    typeId
+  }
+}

@@ -1,0 +1,28 @@
+# Pega esta mutation en GraphiQL: http://localhost:8080/ADA_ENTERPISE_CORE/graphiql
+
+mutation Register($input: SocialEmployeeInput!) {
+  registerEmployeeWithSocial(input: $input) {
+    id
+    externalId
+    mainEmail
+    statusId
+    typeId
+    role
+  }
+}
+
+# Variables:
+# {
+#   "input": {
+#     "provider": "linkedin",
+#     "providerUserId": "abc123",
+#     "email": "usuario@ejemplo.com",
+#     "firstName": "Juan",
+#     "firstLastName": "Perez",
+#     "fullName": "Juan Perez",
+#     "documentNumber": "12345678",
+#     "role": "Consultant",
+#     "statusId": "1",
+#     "typeId": "1"
+#   }
+# }
