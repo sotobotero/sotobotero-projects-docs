@@ -3,6 +3,54 @@
 > Ejecutar en orden. Cada sección asume que la anterior se completó.  
 > URL staging: `https://ada.sotobotero.com/ADA_ENTERPISE_CORE`
 
+## Alcance de esta guía
+
+Esta guía usa un **caso hipotético de gimnasio** para facilitar las pruebas E2E.
+
+El sistema no está limitado a gimnasios: soporta casos de negocio con:
+- solo **servicios**,
+- solo **productos**,
+- **productos compuestos** (producción),
+- o combinaciones mixtas (productos físicos + servicios).
+
+Ejemplo mixto para este caso:
+- servicio mensual facturable mes a mes (contrato),
+- producto comodín sin costo (por ejemplo, tarjeta de acceso),
+- producto físico opcional con inventario (por ejemplo, suplemento vitamínico).
+
+---
+
+## Interfaz del Sistema
+
+El sistema es **muy intuitivo** y sigue un patrón consistente en todas sus funcionalidades:
+
+### Estructura general
+
+- **Menú superior:** Clasificado por módulos funcionales (Seguridad, Parámetros comunes, Facturación, Inventario, Contabilidad, Agenda, Inteligencia de negocio)
+- **Submenús:** Al hacer clic en cada módulo se despliegan las diferentes opciones disponibles
+- **Área de trabajo:** Siempre muestra un listado de entidades/elementos de esa funcionalidad
+- **Tabla:** Con cabecera filtrable (búsqueda, ordenamiento por columnas)
+- **Botonera:** Botones para las operaciones principales: **Create** (crear), **Edit** (editar), **Remove** (eliminar), **More Options** (acciones adicionales según el caso)
+
+![Área de Trabajo - Listado de entidades](images/AreaDetrabajoListas.png)
+
+### Flujo de formularios (Modales)
+
+Cuando pulsas cualquier botón de la botonera (**Create**, **Edit**, **Rectify**, etc.):
+
+1. Se abre un **modal (ventana) con el formulario** respectivo para procesar esa acción
+2. Sigue los pasos indicados en el formulario
+3. **Campos obligatorios:** Marcados con `*` — deben completarse antes de guardar
+4. **Botones de acción:** En cada modal encontrarás:
+   - **Save/Guardar:** Para guardar los cambios
+   - **Add** (si aplica): Para agregar líneas de detalle (ej: líneas en una factura)
+   - **Remove** (si aplica): Para eliminar líneas
+   - Otros botones según la funcionalidad
+
+![Ventana Modal - Formularios con pasos](images/VenanadModales.png)
+
+La intuitividad está en que **este mismo patrón se repite en todas las funcionalidades** del sistema: desde Facturación hasta Inventario, desde Contabilidad hasta Agenda.
+
 ---
 
 ## 0. Pre-requisitos
@@ -10,24 +58,47 @@
 | Requisito | Verificar |
 |---|---|
 | Backend disponible | `https://ada.sotobotero.com/ADA_ENTERPISE_CORE` |
-| Tenant activo en DB | `SELECT * FROM tenant_registry WHERE slug = '<tu-tenant>'` |
-| Usuario administrador creado | cuenta con rol `admin` en el tenant |
+| Tenant activo en DB | `SELECT id, name, url FROM public.datasources WHERE name = '<tu-tenant>';` (DB `ada_master`) |
+| Usuario administrador/base activo | `SELECT id, login, role, status FROM public.user_system WHERE id IN (1,2);` (DB del tenant) y al menos uno con `status=1` |
+| Credenciales iniciales | usar las credenciales entregadas durante el alta/onboarding del tenant |
 
 ---
 
 ## 1. Login
 
 1. Ir a `https://ada.sotobotero.com/ADA_ENTERPISE_CORE`
-2. Ingresar usuario y contraseña del admin del tenant gimnasio.
+2. Ingresar las credenciales entregadas en el onboarding del tenant (usuario administrador/base activo).
 3. **Verificar:** llega al dashboard sin error 401/403.
 
 ---
 
-## 2. Configurar el producto (mensualidad)
+## 2. Configurar producto o servicio (según el caso)
 
-> Solo la primera vez. Si ya existe el producto, saltar a la sección 3.
+> Solo la primera vez. Si ya existe el ítem, saltar a la sección 3.
 
-**Ruta:** Inventario → Productos → Nuevo
+Para este ejemplo (Gym) se usa un **servicio** de mensualidad.
+
+> **📋 Características predefinidas en nuevos tenants**
+> 
+> Cuando se provisiona un nuevo tenant, el sistema genera automáticamente:
+> - Líneas de producto
+> - Grupos
+> - Cajas
+> - Ubicaciones
+> - Listas de precios
+> - *Etc.*
+>
+> **Objetivo:** agilizar la puesta en marcha.
+>
+> **Flexibilidad:** Todo es **completamente parametrizable**. Cada cliente puede:
+> - Crear características propias
+> - Modificar las existentes según su estructura organizativa
+> - Coordinar migraciones de datos
+> - Importar/exportar vía plantillas de Excel
+>
+> Esto puede hacerse antes, durante o después de iniciar operaciones.
+
+**Ruta:** Parametros comunes → Productos → Nuevo
 
 | Campo | Valor |
 |---|---|
@@ -39,7 +110,7 @@
 
 **Guardar.** Anotar el ID del producto (visible en la lista).
 
-**Verificar:** producto aparece en lista con estado `SERVICE_AVAILABLE`.
+**Verificar:** el ítem aparece en lista con estado `SERVICE_AVAILABLE`.
 
 ---
 
@@ -47,7 +118,7 @@
 
 > Si ya existe el cliente, saltar a la sección 4.
 
-**Ruta:** Clientes → Nuevo
+**Ruta:** Facturación → Clientes → Nuevo
 
 | Campo | Valor |
 |---|---|
@@ -61,7 +132,7 @@
 
 ## 4. Crear factura de inscripción + contrato
 
-**Ruta:** Facturación → Nueva Factura
+**Ruta:** Facturación → Facturas → botón crear
 
 ### 4.1 Cabecera de la factura
 
@@ -79,6 +150,8 @@
 | Producto | `Mensualidad Gym` |
 | Cantidad | `1` |
 | Precio unitario | `120.000` |
+
+> Nota: en otros casos de uso se puede facturar un producto físico, un servicio, o una combinación de ambos.
 
 **Guardar factura.**
 
@@ -108,7 +181,7 @@ El scheduler corre diario automáticamente. Para forzarlo manualmente basta con 
 
 ## 6. Finalizar contrato
 
-**Ruta:** Clientes → `Juan Pérez` → Contratos → Seleccionar contrato → Finalizar
+**Ruta:** Facturación → Clientes → `Juan Pérez` → Contratos → Seleccionar contrato → Finalizar
 
 **Verificar:**
 - Estado del contrato: `CONTRACT_FINISHED`
