@@ -67,8 +67,15 @@ La intuitividad está en que **este mismo patrón se repite en todas las funcion
 ## 1. Login
 
 1. Ir a `https://ada.sotobotero.com/ADA_ENTERPISE_CORE`
-2. Ingresar las credenciales entregadas en el onboarding del tenant (usuario administrador/base activo).
-3. **Verificar:** llega al dashboard sin error 401/403.
+
+![Pantalla de Login](images/login.png)
+
+2. Completar los campos:
+   - **Tenant ID:** Ingresar el ID del tenant que fue entregado en tu proceso de onboarding
+   - **Usuario:** Usar las credenciales entregadas en el onboarding (ej: usuario administrador/base activo)
+   - **Contraseña:** La contraseña asociada a ese usuario
+
+3. **Verificar:** Llega al dashboard sin error 401/403.
 
 ---
 
