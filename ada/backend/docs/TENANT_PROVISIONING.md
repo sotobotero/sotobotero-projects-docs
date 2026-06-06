@@ -104,6 +104,21 @@ En la pantalla de login de ADA:
 | Tenant | `<nombre_registrado_en_datasources>` |
 | Usuario | admin del tenant (heredado de la DB fuente) |
 
+### Verificación mínima de usuarios para E2E
+
+Antes de ejecutar pruebas E2E, validar que quedó al menos un usuario base activo (`id` 1 o 2):
+
+```bash
+docker exec $C psql -U postgres -d <nombre_tenant> -c \
+  "SELECT id, login, role, status FROM public.user_system WHERE id IN (1,2) ORDER BY id;"
+```
+
+Esperado:
+- al menos uno de esos usuarios con `status = 1`
+- normalmente existen `root` (id=1) y `admin` (id=2)
+
+Si no aparecen, recrear el tenant desde `db:default_tenant` o restaurar usuarios base antes del login.
+
 ---
 
 ## Verificar el registro
@@ -141,3 +156,39 @@ docker exec $C psql -U postgres -d <nombre_tenant> -c \
    SELECT count(*) as users     FROM public.user_system;"
 # Esperado: customers=0, invoices=0, products=0, users=2
 ```
+
+---
+
+## TODO de seguridad — aprovisionamiento de usuarios iniciales
+
+Estado actual observado en onboarding:
+- Se crean usuarios base (`root` y `demo`).
+- Existe una contraseña inicial genérica para `demo` (con hash conocido), lo cual no es aceptable para producción.
+
+Objetivo:
+- Eliminar credenciales iniciales predecibles/reutilizadas entre tenants.
+- Definir un flujo seguro de creación y entrega de credenciales iniciales por tenant.
+
+### Cambios requeridos en aprovisionamiento automático
+
+- [ ] **No usar hash fijo ni contraseña por defecto compartida** (`demo/demo` o equivalentes).
+- [ ] **Generar contraseña aleatoria única por tenant** (alta entropía) para el usuario inicial.
+- [ ] **Marcar credencial como temporal** y forzar cambio en primer login.
+- [ ] **Deshabilitar/eliminar `demo` en entornos productivos** (mantenerlo solo en QA/local si aplica).
+- [ ] **Evitar exponer contraseñas en logs** del script/CI/CD.
+- [ ] **Registrar auditoría mínima** del onboarding: tenant, fecha, actor, usuarios creados (sin secretos).
+
+### Entrega segura de credenciales iniciales
+
+- [ ] **No enviar credenciales por chat/correo plano**.
+- [ ] **Entregar por canal seguro** (secret manager, vault, enlace de un solo uso o ticket cifrado).
+- [ ] **Definir TTL para credenciales bootstrap** (expiran si no se usan).
+- [ ] **Rotar inmediatamente** después de la primera autenticación exitosa.
+
+### Criterio de aceptación (Definition of Done)
+
+Un onboarding de tenant se considera correcto cuando:
+- no existe ninguna contraseña inicial genérica reutilizable entre tenants,
+- el usuario inicial obliga cambio de contraseña al primer acceso,
+- la entrega de credenciales queda trazada por canal seguro,
+- y no se imprimen secretos en logs de aprovisionamiento.
