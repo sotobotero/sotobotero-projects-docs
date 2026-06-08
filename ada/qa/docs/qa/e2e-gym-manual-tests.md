@@ -147,6 +147,7 @@ Para este ejemplo (Gym) se usa un **servicio** de mensualidad.
 |---|---|
 | Cliente | `Juan Pérez` |
 | Fecha | Hoy |
+| **Agregar producto o servicio** | Pulse el boton agregasr de la tabla, busque y selecciones el producto o servicio `Mensualidad Gym` |
 | **Crear contrato** | ✅ activado (`makeContract = true`) |
 | **Meses de permanencia** | `6` (o `0` para mes a mes sin permanencia) |
 
@@ -175,9 +176,80 @@ Para este ejemplo (Gym) se usa un **servicio** de mensualidad.
 
 ## 5. Simular facturación cíclica (ciclo mensual)
 
-El scheduler corre diario automáticamente. Para forzarlo manualmente basta con avanzar la fecha del sistema un mes **o** invocar el endpoint de debug (si está habilitado).
+El scheduler corre automáticamente **todos los días a las 3:00 AM UTC**. Para forzarlo manualmente sin esperar hay dos opciones:
 
-> En entorno local, la fecha se puede ajustar en el `billingDate` del servicio si hay un override de `Clock`, o esperando al día equivalente del mes siguiente.
+---
+
+### Opción A — Endpoint REST (disparo inmediato)
+
+**curl:**
+```bash
+curl -X POST http://localhost:8080/ADA_ENTERPISE_CORE/restapi/v1/billing/trigger-cycle
+```
+
+**Swagger UI:**
+1. Ir a `http://localhost:8080/ADA_ENTERPISE_CORE/swagger-ui.html`
+2. Buscar la sección **billing-trigger-api**
+3. Expandir `POST /restapi/v1/billing/trigger-cycle`
+4. Pulsar **Try it out** → **Execute**
+
+El endpoint procesa el ciclo para todos los tenants activos en ese momento.
+
+---
+
+### Opción B — Ajustar BD para que el job de las 3 AM lo agarre
+
+El scheduler compara un único campo: `billing_cicle.start_day_billing` (número entero = día del mes) con el día del mes actual. **No hay cálculo de fechas en el ciclo** — es simplemente "el día N de cada mes se factura este ciclo".
+
+Además tiene un filtro anti-duplicado en dos niveles:
+- **Nivel 1 (DAO):** excluye contratos cuya `last_invoice.invoice_date` sea de hoy.
+- **Nivel 2 (servicio):** valida que hayan transcurrido al menos `billing_cicle.end_day_billing` días desde la última factura — **este valor se toma dinámicamente del ciclo de cada cliente**, no es un número fijo. Ejemplo: ciclo "Primero de cada mes" tiene `end_day_billing=30` → requiere 30 días; ciclo quincenal tiene `end_day_billing=14` → requiere 14 días.
+
+**Condiciones que deben cumplirse simultáneamente:**
+
+| # | Campo | Condición |
+|---|---|---|
+| 1 | `billing_cicle.start_day_billing` | = día del mes de hoy (ej: `7` si hoy es 7 de junio) |
+| 2 | `contract_items.last_invoice → invoice.invoice_date` | NOT entre las 00:00 y 23:59 de hoy (anti-duplicado) |
+| 3 | `contract_items.pending_month` | > 0 |
+| 4 | `contract_items.rental` | > 0 |
+
+**1. Ver el estado actual de los contratos activos:**
+```sql
+SELECT
+  ci.id              AS contract_id,
+  ci.pending_month,
+  ci.rental,
+  bc.id              AS billing_cicle_id,
+  bc.name            AS cicle_name,
+  bc.start_day_billing,
+  EXTRACT(DAY FROM NOW())::integer AS today_day,
+  i.invoice_date     AS last_invoice_date
+FROM billing.contract_items ci
+JOIN billing.customer cu ON cu.id = ci.customer
+JOIN billing.account a ON a.customer = cu.id AND a.type = 1
+JOIN billing.billing_cicle bc ON bc.id = a.billing_cycle
+JOIN billing.invoice i ON i.id = ci.last_invoice
+WHERE ci.pending_month > 0;
+```
+
+**2. Actualizar `start_day_billing` al día de hoy** (condición 1):
+```sql
+-- Reemplaza <ID_BILLING_CICLE> con el id del query anterior
+UPDATE billing.billing_cicle
+SET start_day_billing = EXTRACT(DAY FROM NOW())::integer
+WHERE id = <ID_BILLING_CICLE>;
+```
+
+**3. Retrofechar la `invoice_date` de la última factura al mes pasado** (condición 2 — anti-duplicado):
+```sql
+-- Reemplaza <ID_LAST_INVOICE> con el last_invoice del query anterior
+UPDATE billing.invoice
+SET invoice_date = invoice_date - INTERVAL '1 month'
+WHERE id = <ID_LAST_INVOICE>;
+```
+
+> **Nota:** Solo en entornos de prueba. Revertir ambos cambios después si es necesario.
 
 **Verificar tras el ciclo:**
 - Aparece una nueva factura generada automáticamente para `Juan Pérez`.
