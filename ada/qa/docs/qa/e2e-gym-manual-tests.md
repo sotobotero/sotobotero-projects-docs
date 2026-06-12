@@ -3,6 +3,59 @@
 > Ejecutar en orden. Cada sección asume que la anterior se completó.  
 > URL staging: `https://ada.sotobotero.com/ADA_ENTERPISE_CORE`
 
+---
+
+## ¿Qué problema resuelve este sistema?
+
+Un gimnasio necesita gestionar sus socios, cobrarles mes a mes y controlar quién puede entrar a las instalaciones. ADA Core cubre todo ese ciclo — desde el momento en que una persona se inscribe hasta que paga, renueva o cancela su membresía.
+
+```mermaid
+flowchart TB
+    classDef fase1 fill:#d4edda,stroke:#28a745,color:#155724
+    classDef fase2 fill:#e8f4fd,stroke:#4A90D9,color:#1a4a6e
+    classDef sistema fill:#fff3cd,stroke:#d4a017,color:#5a4000
+    classDef acceso fill:#f8d7da,stroke:#dc3545,color:#721c24
+
+    ADA["🖥️ ADA Core
+    ─────────────────
+    El sistema de gestión
+    del gimnasio"]
+
+    subgraph F1["✅  Fase 1 — Disponible hoy"]
+        direction TB
+        ADM["👤 Administrador
+        del gimnasio"]
+
+        ADM -->|"1. Registra al socio\ny firma su contrato"| ADA
+        ADM -->|"2. El sistema cobra\nautomáticamente cada mes"| ADA
+        ADM -->|"3. Consulta pagos,\nemite facturas y reportes"| ADA
+    end
+
+    subgraph F2["🔜  Fase 2 — Próximamente"]
+        direction TB
+        SOC["📱 Miembro
+        (con app en su móvil)"]
+        PUERTA["🚪 Control de acceso
+        Molinete o puerta magnética"]
+
+        SOC -->|"Usa la app\ncomo llave"| PUERTA
+        SOC -->|"Reserva clases,\nve sus pagos y rutinas"| ADA
+    end
+
+    ADA -->|"¿Pagos al día?\n✅ Abre la puerta\n❌ Bloquea el paso"| PUERTA
+
+    class ADM fase1
+    class ADA sistema
+    class SOC fase2
+    class PUERTA acceso
+```
+
+**En resumen:**
+- **Fase 1** — El administrador lleva todo desde el sistema web: altas, contratos, cobros y facturación.
+- **Fase 2** — El socio tiene una app en su móvil que le sirve de llave de acceso al gimnasio y le permite reservar clases, consultar su plan de entrenamiento y revisar sus pagos. La app consulta a ADA Core en tiempo real: si el socio está al día, la puerta se abre; si no, el acceso queda bloqueado.
+
+---
+
 ## Alcance de esta guía
 
 Esta guía usa un **caso hipotético de gimnasio** para facilitar las pruebas E2E.
