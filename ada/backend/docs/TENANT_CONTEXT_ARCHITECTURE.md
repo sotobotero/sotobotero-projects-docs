@@ -700,6 +700,69 @@ public class FilterAllRequestDispatcher {
 
 ---
 
+## Sistema de autorización — permisos granulares por tenant
+
+Cada tenant tiene su propio catálogo de permisos. Este capítulo describe cómo se asignan, cómo se almacenan y cómo se resuelven en tiempo de login.
+
+### Entidades implicadas
+
+```
+Role ──────────────── role_permision ──────── Permission
+  │                  (qué puede el rol)          │
+  │ bypass (flag)                                │
+  │                                              │
+UserSystem ──── user_permission_grant ───────── Permission
+               (qué se le ha concedido          (permite sumar permisos
+                explícitamente)                  fuera del rol)
+
+UserSystem ──── user_permission_revoke ──────── Permission
+               (qué se le ha revocado
+                explícitamente)
+```
+
+### Cómo se guardan los permisos
+
+Cuando se asigna o cambia el rol de un usuario, el sistema escribe automáticamente en `user_permission_grant` una fila por cada permiso del rol (con `source = role-sync`). Esto convierte la tabla de grants en la **única fuente de verdad** sobre qué tiene asignado cada usuario, independientemente de cómo se llegó a esa asignación.
+
+También es posible añadir grants manuales (`source = manual-grant`) para dar permisos adicionales puntuales sin cambiar el rol, y revokes para retirar permisos concretos sin cambiar el rol.
+
+### Cómo se resuelven los permisos en el login
+
+En el momento del login, el `PermissionResolver` calcula los permisos efectivos del usuario y los carga en la sesión HTTP antes de que la UI los lea:
+
+```
+¿El rol tiene bypass activado?
+    Sí → el usuario recibe todos los permisos del rol directamente
+          (sin pasar por el sistema de grants/revokes)
+    No → permisos efectivos = grants activos − revokes activos
+```
+
+```mermaid
+flowchart TD
+    L[Login] --> R{role.bypass?}
+    R -->|Sí| RP[Devuelve todos los permisos del rol]
+    R -->|No| G[Lee user_permission_grant activos]
+    G --> V[Resta user_permission_revoke activos]
+    V --> EF[Permisos efectivos]
+    RP --> S[Sesión HTTP]
+    EF --> S
+    S --> UI[UI lee getCurrentUser.getPermissions]
+```
+
+### El flag bypass
+
+`role.bypass = true` es el mecanismo para roles de sistema (como `root`) que deben tener acceso total sin gestión de grants individuales. Con bypass activado el resolver devuelve todos los permisos del rol sin consultar las tablas de grants y revokes.
+
+Por defecto todos los roles tienen `bypass = false`. Solo se activa manualmente para roles de superadministración.
+
+### Qué no hace este sistema
+
+- No gestiona autenticación — eso es Keycloak.
+- No reemplaza la resolución de tenant — el tenant se resuelve antes, en el filter de request.
+- Los permisos son internos al tenant: cada DB de negocio tiene su propio catálogo de `Role` y `Permission`.
+
+---
+
 ## Pendiente posterior (no bloqueante para booking-first)
 
 - Job de migración marketplace → business cuando un profesional escala de plan (Caso 4).
