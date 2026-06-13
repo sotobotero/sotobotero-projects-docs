@@ -755,6 +755,30 @@ flowchart TD
 
 Por defecto todos los roles tienen `bypass = false`. Solo se activa manualmente para roles de superadministración.
 
+### Roles por defecto — contrato de seed obligatorio
+
+Toda base de datos de tenant **debe entregarse poblada** con estos tres roles en los IDs exactos indicados. El código fuente contiene constantes que referencian estos IDs por valor; si los IDs no existen en la DB el sistema falla en runtime.
+
+| id | name | bypass | Propósito |
+|---|---|---|---|
+| `1` | `root` | `true` | Superadministrador técnico. `bypass = true` — el resolver le devuelve todos los permisos del rol sin pasar por grants/revokes. Uso exclusivo de soporte e infraestructura. |
+| `2` | `administrador del sistema` | `false` | Usuario del cliente con funciones de administración. Se entrega con los permisos preconfigurados correspondientes al plan contratado. Es quien gestiona empleados, configuración del negocio y catálogos. |
+| `3` | `usuario basico` | `false` | Rol mínimo asignado automáticamente a usuarios creados por el sistema (empleados creados desde UI, signups OAuth). Acceso mínimo: únicamente cambiar su propia contraseña (`/pages/core/common/ChangePasword.xhtml`). El primer login de estos usuarios los lleva directamente a esa pantalla. |
+
+**Constantes del código que dependen de estos IDs** (`Common.java`):
+
+```java
+// Vista a la que se redirige un usuario creado automáticamente en su primer login
+public static final long DEFAULT_AUTO_USER_VIEW_ID = 30L;  // /pages/core/common/ChangePasword.xhtml
+
+// Rol asignado a usuarios creados automáticamente por el sistema
+public static final long DEFAULT_AUTO_USER_ROLE_ID = 3L;   // usuario basico
+```
+
+Estas constantes se usan en `EmployeeController.prepareCreate()` para asignar vista y rol por defecto al crear un empleado. Si el rol `3` o la vista `30` no existen en la DB del tenant, la creación de empleados falla silenciosamente.
+
+**Migración de referencia:** `033-configure-default-auto-user-role.sql` — configura el rol `3` y le asigna el permiso mínimo de cambio de contraseña. Debe ejecutarse en cada tenant al provisionar la DB.
+
 ### Qué no hace este sistema
 
 - No gestiona autenticación — eso es Keycloak.
