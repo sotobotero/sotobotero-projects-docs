@@ -341,6 +341,66 @@ Keycloak Groups/Roles no escala para miles de tenants:
 | Queries complejas | Imposible | SQL normal |
 | Roles granulares de negocio | No aplica | Viven en DB del tenant |
 
+### Routing actual — cómo se construye la conexión hoy
+
+`ConnectionProviderImpl.buildJdbcUrl()` construye la URL JDBC directamente del `tenantId` en contexto:
+
+```java
+// ConnectionProviderImpl.java
+private String buildJdbcUrl(String baseUrl, String tenantId) {
+    int lastSlashIndex = baseUrl.lastIndexOf('/');
+    return baseUrl.substring(0, lastSlashIndex + 1) + tenantId;
+    // resultado: jdbc:postgresql://host:5432/<tenantId>
+}
+```
+
+El `tenantId` es siempre el valor de `TenantContext.getCurrentTenant()` → que proviene del header `X-TenantID` → que es el `slug` de `tenant_registry`.
+
+**Consecuencias directas del diseño actual:**
+
+| Campo | Uso real hoy | Observación |
+|---|---|---|
+| `slug` | Identificador de runtime en **todo**: header, TenantContext, JDBC URL, FK de memberships | Es la única fuente de verdad de routing |
+| `db_name` | **No leído por ningún código de routing** — se escribe pero no se consulta | Campo de metadata / preparación futura |
+
+**Invariante obligatoria:** mientras el routing use `slug` directamente como nombre de DB, `slug` DEBE ser idéntico al nombre de la base de datos en PostgreSQL. Si difieren, el app intenta conectar a una DB que no existe y falla en runtime.
+
+```
+slug = "gym_nueva"  →  jdbc:postgresql://host:5432/gym_nueva
+                                                    ^^^^^^^^
+                                          debe existir esta DB
+```
+
+---
+
+### TODO — Routing para modo marketplace
+
+Cuando se implemente el modo `marketplace` (tenants que comparten una sola DB), el routing deberá:
+
+1. **Consultar `tenant_registry`** para obtener `db_name` y `mode` antes de crear la conexión.
+2. **Bifurcar según `mode`:**
+   - `mode = 'business'` → conectar a `db_name` (una DB dedicada por tenant)
+   - `mode = 'marketplace'` → conectar a la DB compartida del marketplace (ignorar `slug` como DB name)
+3. **Aplicar aislamiento lógico** dentro de la DB compartida (row-level security por `tenant_id`).
+
+Pseudocódigo del routing futuro:
+
+```java
+// TODO: implementar cuando se active el modo marketplace
+TenantRegistryEntry entry = tenantRegistryRepo.findBySlug(tenantId);
+if (entry.getMode().equals("marketplace")) {
+    return buildJdbcUrl(baseUrl, MARKETPLACE_DB_NAME); // DB compartida
+} else {
+    return buildJdbcUrl(baseUrl, entry.getDbName());   // DB dedicada
+}
+```
+
+**Prerequisitos antes de activar marketplace:**
+- [ ] `ConnectionProviderImpl` debe hacer el lookup a `tenant_registry` (hoy no lo hace)
+- [ ] Todas las tablas compartidas deben tener columna `tenant_id` con políticas RLS
+- [ ] El `slug` deja de ser equivalente al nombre de la DB para tenants marketplace
+- [ ] `MultiTenantConnectionProviderImpl` necesita caché del registro para no golpear ada_master en cada request
+
 ---
 
 ## DB por tenant — roles y permisos granulares

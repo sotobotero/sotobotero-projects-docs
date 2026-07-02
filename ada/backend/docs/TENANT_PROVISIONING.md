@@ -1,123 +1,176 @@
 # Provisioning de un nuevo tenant
 
-## Arquitectura rápida
+## Arquitectura
 
 | Componente | Rol |
 |---|---|
-| `ada_master` | DB del framework — contiene la tabla `public.datasources` que registra los tenants |
-| `<tenant_db>` | DB de negocio del tenant — esquemas: `billing`, `inventory`, `public`, etc. |
-| `provision-tenant-db.sh` | Script en `infraestructure-as-code` que hace todo el proceso |
+| `ada_master` | DB del framework — `tenant_registry`, `users`, `memberships` |
+| `<tenant_db>` | DB de negocio — `billing`, `inventory`, `public.user_system`, etc. |
+| `provision-tenant.sh` | **Script HOST** — orquesta Keycloak + DB (nuevo, punto de entrada) |
+| `provision-tenant-db.sh` | **Script CONTAINER** — solo operaciones psql (llamado por el anterior) |
 
-El app ADA lee `ada_master.public.datasources` al arrancar para saber a qué DBs conectarse. Sin ese registro el tenant no existe para el app.
+---
+
+## Flujo completo de provisioning
+
+```
+[Host — provision-tenant.sh]
+  │
+  ├─ 1. Keycloak API (curl)
+  │     └─ upsert usuario 'admin' → obtiene KEYCLOAK_UUID real
+  │
+  └─ 2. docker exec provision-tenant-db.sh (con KEYCLOAK_UUID + ADMIN_PASS_HASH)
+         │
+         ├─ Crea la DB del tenant
+         ├─ Clona desde default_tenant (o dump)
+         ├─ Concede privilegios a appuser en todos los schemas
+         ├─ Registra en ada_master.tenant_registry (slug, db_name, company_name)
+         ├─ Upsert admin en ada_master.users (keycloak_id real, login=NIT, pass=SHA1(NIT))
+         ├─ Memberships: NIT + root → tenant (role='owner')
+         ├─ INSERT person + user_system en la DB de negocio (NIT + nombre empresa)
+         ├─ UPDATE company_profile: name + document_number; limpia campos de contacto del clone
+         └─ (opcional) limpia datos de negocio
+```
 
 ---
 
 ## Prerequisitos
 
-- Acceso SSH al servidor Ionos: `ssh ionos`
-- Nombre del contenedor Patroni activo (verificar con `docker ps | grep patroni`)
-- Credenciales del usuario `appuser` (en Docker secret `ada-db-password`)
+- SSH al servidor Ionos: `ssh ionos`
+- `KEYCLOAK_ADMIN_PASS` disponible (jamás hardcodearlo — ver `.vscode/.env.debug.local`)
+- `APP_PASSWORD_DB` disponible (password de `appuser`)
 
 ---
 
-## Crear un nuevo tenant
-
-### 1. Copiar el script al contenedor Patroni
+## Ejecutar el provisioning
 
 ```bash
-C=$(docker ps --filter name=patroni --format "{{.Names}}" | head -1)
-
-docker cp \
-  /home/ionosadmin/infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles/provision-tenant-db.sh \
-  $C:/tmp/provision-tenant-db.sh
-
-docker exec $C chmod +x /tmp/provision-tenant-db.sh
+# Desde el servidor Ionos
+KEYCLOAK_ADMIN_PASS=<pass_keycloak_admin> \
+APP_PASSWORD_DB=<pass_appuser> \
+/home/ionosadmin/infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles/provision-tenant.sh \
+  <tenant_slug> db:default_tenant public <NIT> "Nombre Legal de la Empresa S.A.S" info@empresa.co
 ```
 
-### 2. Ejecutar el script
+### Con limpieza de datos de negocio (tenant nuevo / QA)
 
-#### Modo básico — clonar y registrar
 ```bash
-docker exec \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_DB=postgres \
-  -e APP_USER_DB=appuser \
-  -e APP_PASSWORD_DB=<password_de_appuser> \
-  -e MASTER_DB=ada_master \
-  -e DB_INTERNAL_HOST=192.168.1.20 \
-  $C /tmp/provision-tenant-db.sh <nuevo_tenant> db:default_tenant public
+KEYCLOAK_ADMIN_PASS=<pass> APP_PASSWORD_DB=<pass> \
+./provision-tenant.sh <tenant_slug> db:default_tenant public <NIT> "Nombre Legal" info@empresa.co --clean-data
 ```
 
-#### Modo todo-en-uno — clonar, registrar y limpiar datos de negocio
-Útil para crear un tenant de QA o cliente nuevo sin datos previos:
-```bash
-docker exec \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_DB=postgres \
-  -e APP_USER_DB=appuser \
-  -e APP_PASSWORD_DB=<password_de_appuser> \
-  -e MASTER_DB=ada_master \
-  -e DB_INTERNAL_HOST=192.168.1.20 \
-  $C /tmp/provision-tenant-db.sh <nuevo_tenant> db:default_tenant public --clean-data
+### Parámetros
+
+| Posición | Nombre | Ejemplo | Descripción |
+|---|---|---|---|
+| `$1` | `tenant_slug` | `gym_nueva` | Nombre de DB y runtime identifier del tenant |
+| `$2` | `source` | `db:default_tenant` | DB fuente a clonar o ruta a dump |
+| `$3` | `schemas` | `public` | Legacy; el script concede sobre todos los schemas |
+| `$4` | `nit` | `900123456` | NIT / número de identificación de la empresa |
+| `$5` | `company_name` | `"GymX S.A.S"` | Nombre legal de la empresa (quoted si tiene espacios) |
+| `$6` | `email` | `info@gymx.co` | *(opcional)* Email de contacto — Keycloak, ada_master y company_profile; default `admin@<slug>.local` |
+| `$7` | *(opcional)* | `--clean-data` | Limpia datos de negocio; mantiene catálogos y users id 1-2 |
+
+### Variables de entorno requeridas
+
+| Variable | Fuente | Descripción |
+|---|---|---|
+| `KEYCLOAK_ADMIN_PASS` | Secret / env manual | Password del admin master de Keycloak |
+| `APP_PASSWORD_DB` | Secret / env manual | Password del `appuser` en PostgreSQL |
+
+---
+
+## Qué crea el script
+
+### Keycloak (realm `arcadia`)
+
+| Campo | Valor |
+|---|---|
+| `username` | `<NIT>` — un usuario por empresa, único en el realm |
+| `email` | `admin@<tenant_slug>.local` |
+| `password` | `<NIT>` (plain text en Keycloak, SHA1 en ada_master) |
+| `temporary` | `false` (cambiar manualmente tras primer login) |
+
+Si ya existe un usuario Keycloak con `username=<NIT>` (re-provisioning), solo actualiza el password.
+
+### ada_master.tenant_registry
+
+```
+slug         = <tenant_slug>
+db_name      = <tenant_slug>
+company_name = <company_name>     ← nombre legal para queries en ada_master
+mode         = 'business'
+status       = 'active'
 ```
 
-**El script hace automáticamente:**
-1. Crea la DB `<nuevo_tenant>`
-2. Clona esquema + datos desde `default_tenant` (o cualquier DB fuente)
-3. Concede permisos a `appuser` en todos los schemas
-4. Registra el tenant en `ada_master.public.datasources`
-5. *(con `--clean-data`)* Borra todos los datos de negocio — deja solo catálogos y usuarios admin id 1 y 2
+### ada_master.users
 
-> Para usar un dump en lugar de clonar una DB en vivo:
-> ```bash
-> ... $C /tmp/provision-tenant-db.sh <nuevo_tenant> /path/al/dump.dump public
+```
+login         = '<NIT>'               ← identificador único por empresa
+email         = 'admin@<tenant>.local'
+keycloak_id   = <UUID real de Keycloak>
+password_hash = SHA1(<NIT>)
+```
+
+### ada_master.memberships
+
+| user (login) | tenant_slug | role | status |
+|---|---|---|---|
+| `<NIT>` | `<tenant_slug>` | `owner` | `active` |
+| `root` | `<tenant_slug>` | `owner` | `active` |
+
+### company_profile en la DB de negocio
+
+El clone de `default_tenant` trae `company_profile` con datos de demo. El script actualiza solo los campos que conoce en el momento del provisioning:
+
+| Campo | Valor | Razón |
+|---|---|---|
+| `name` | `<company_name>` | Nombre legal de la empresa |
+| `document_number` | `<NIT>` | Identificación fiscal |
+| `email` | `<email>` | Email del parámetro de entrada (o `admin@<slug>.local` si omitido) |
+| `addres`, `phone` | `''` (vacío) | Desconocidos — el admin los rellena tras primer login |
+| `url_website` | `NULL` | Desconocido |
+| `bank_account_number`, `internation_bank_acount` | `''` | Desconocidos |
+| `creditor_id`, `autorization_code` | `''` | Desconocidos |
+| Resto (locale, timezone, impuestos, impresoras…) | **sin tocar** | Heredan del clone y son configurables por el admin |
+
+### user_system en la DB de negocio
+
+> **Regla de mapping crítica:** `LoginBean` resuelve la sesión con:
+> ```java
+> String resolvedLogin = memberships.get(0).get("login");   // de ada_master
+> findByPropertiesConjunctionEq(UserSystem.class, Map.of("login", resolvedLogin));
 > ```
+> `ada_master.users.login = NIT` debe coincidir con `user_system.login = NIT`.
+> Por eso el script inserta un usuario nuevo en `user_system` con `login = NIT`.
 
-### 3. Restart del servicio ADA
+| id | login | role | status | origen |
+|---|---|---|---|---|
+| 1 | `root` | 1 (super admin) | 1 | clone de `default_tenant` |
+| 2 | `admin` | 2 (System Administrator) | 1 | clone de `default_tenant` |
+| 3+ | `<NIT>` | **2 (System Administrator)** | 1 | **insertado por este script** |
+
+El INSERT usa herencia JOINED (`person` → `user_system`):
+- `person.document_number = NIT`, `firts_name = company_name`, `full_name = company_name`
+- `user_system.login = NIT`, `role/status/company/cash/view` copiados de id=2
+
+---
+
+## Iniciar sesión
+
+| Campo | Valor |
+|---|---|
+| Tenant | `<tenant_slug>` |
+| Usuario | `<NIT>` (número de identificación de la empresa) |
+| Contraseña | `<NIT>` (contraseña inicial — **cambiar tras primer acceso**) |
+
+---
+
+## Restart del servicio ADA
 
 ```bash
 docker service update --force ada-staging_ada
 ```
-
-### 4. Configurar el perfil de la empresa (primera vez)
-
-Conectarse a la DB del tenant y actualizar según el tipo de negocio:
-
-```sql
--- Ejemplo para un gimnasio
-UPDATE public.company_profile
-SET
-  name            = 'Gym QA Test',
-  manage_contracts = true,
-  month_stay      = 6
-WHERE id = 1;
-```
-
----
-
-## Iniciar sesión en el nuevo tenant
-
-En la pantalla de login de ADA:
-
-| Campo | Valor |
-|---|---|
-| Tenant | `<nombre_registrado_en_datasources>` |
-| Usuario | admin del tenant (heredado de la DB fuente) |
-
-### Verificación mínima de usuarios para E2E
-
-Antes de ejecutar pruebas E2E, validar que quedó al menos un usuario base activo (`id` 1 o 2):
-
-```bash
-docker exec $C psql -U postgres -d <nombre_tenant> -c \
-  "SELECT id, login, role, status FROM public.user_system WHERE id IN (1,2) ORDER BY id;"
-```
-
-Esperado:
-- al menos uno de esos usuarios con `status = 1`
-- normalmente existen `root` (id=1) y `admin` (id=2)
-
-Si no aparecen, recrear el tenant desde `db:default_tenant` o restaurar usuarios base antes del login.
 
 ---
 
@@ -125,70 +178,48 @@ Si no aparecen, recrear el tenant desde `db:default_tenant` o restaurar usuarios
 
 ```bash
 C=$(docker ps --filter name=patroni --format "{{.Names}}" | head -1)
-docker exec $C psql -U postgres -d ada_master -c "SELECT id, name, url FROM public.datasources;"
+
+# Tenant en registry
+docker exec $C psql -U postgres -d ada_master \
+  -c "SELECT slug, db_name, mode, status FROM tenant_registry;"
+
+# Memberships
+docker exec $C psql -U postgres -d ada_master \
+  -c "SELECT u.login, m.tenant_slug, m.role, m.status
+      FROM memberships m
+      JOIN users u ON u.id = m.user_id
+      ORDER BY m.tenant_slug, u.login;"
+
+# Usuarios base en la DB de negocio
+docker exec $C psql -U postgres -d <tenant_slug> \
+  -c "SELECT id, login, role, status FROM public.user_system WHERE id IN (1,2) ORDER BY id;"
 ```
 
 ---
 
-## Limpiar datos de un tenant ya existente
-
-Si el tenant ya existe y solo necesitas borrar los datos de negocio (ej: re-preparar QA):
+## Limpiar datos de un tenant existente
 
 ```bash
 C=$(docker ps --filter name=patroni --format "{{.Names}}" | head -1)
-SCRIPT_PATH=/home/ionosadmin/infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles/clean-tenant-data.sql
-
-docker cp $SCRIPT_PATH $C:/tmp/clean-tenant-data.sql
-docker exec $C psql -U postgres -d <nombre_tenant> -f /tmp/clean-tenant-data.sql
+docker cp /home/ionosadmin/infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles/clean-tenant-data.sql \
+  $C:/tmp/clean-tenant-data.sql
+docker exec $C psql -U postgres -d <tenant_slug> -f /tmp/clean-tenant-data.sql
 ```
 
-**Qué limpia:**
-- Borra: clientes, facturas, productos, proveedores, empleados, contabilidad, diario, kardex, audit log
-- Resetea todas las secuencias a 1
-- Mantiene: catálogos (nomenclaturas, tipos, impuestos), configuración de caja, `company_profile`, usuarios admin (id 1 y 2)
-
-**Verificar resultado esperado:**
-```bash
-docker exec $C psql -U postgres -d <nombre_tenant> -c \
-  "SELECT count(*) as customers FROM billing.customer;
-   SELECT count(*) as invoices  FROM billing.invoice;
-   SELECT count(*) as products  FROM inventory.product;
-   SELECT count(*) as users     FROM public.user_system;"
-# Esperado: customers=0, invoices=0, products=0, users=2
-```
+**Qué limpia:** clientes, facturas, productos, empleados, contabilidad, diario, kardex, audit log. Resetea secuencias.
+**Mantiene:** catálogos, `company_profile`, usuarios id 1 y 2.
 
 ---
 
-## TODO de seguridad — aprovisionamiento de usuarios iniciales
+## Seguridad
 
-Estado actual observado en onboarding:
-- Se crean usuarios base (`root` y `demo`).
-- Existe una contraseña inicial genérica para `demo` (con hash conocido), lo cual no es aceptable para producción.
-
-Objetivo:
-- Eliminar credenciales iniciales predecibles/reutilizadas entre tenants.
-- Definir un flujo seguro de creación y entrega de credenciales iniciales por tenant.
-
-### Cambios requeridos en aprovisionamiento automático
-
-- [ ] **No usar hash fijo ni contraseña por defecto compartida** (`demo/demo` o equivalentes).
-- [ ] **Generar contraseña aleatoria única por tenant** (alta entropía) para el usuario inicial.
-- [ ] **Marcar credencial como temporal** y forzar cambio en primer login.
-- [ ] **Deshabilitar/eliminar `demo` en entornos productivos** (mantenerlo solo en QA/local si aplica).
-- [ ] **Evitar exponer contraseñas en logs** del script/CI/CD.
-- [ ] **Registrar auditoría mínima** del onboarding: tenant, fecha, actor, usuarios creados (sin secretos).
-
-### Entrega segura de credenciales iniciales
-
-- [ ] **No enviar credenciales por chat/correo plano**.
-- [ ] **Entregar por canal seguro** (secret manager, vault, enlace de un solo uso o ticket cifrado).
-- [ ] **Definir TTL para credenciales bootstrap** (expiran si no se usan).
-- [ ] **Rotar inmediatamente** después de la primera autenticación exitosa.
-
-### Criterio de aceptación (Definition of Done)
-
-Un onboarding de tenant se considera correcto cuando:
-- no existe ninguna contraseña inicial genérica reutilizable entre tenants,
-- el usuario inicial obliga cambio de contraseña al primer acceso,
-- la entrega de credenciales queda trazada por canal seguro,
-- y no se imprimen secretos en logs de aprovisionamiento.
+| Ítem | Estado |
+|---|---|
+| Keycloak UUID real (no placeholder) en ada_master | ✅ |
+| Password único por tenant (SHA1 del NIT) en ada_master | ✅ |
+| Credenciales nunca hardcodeadas en scripts | ✅ (env vars) |
+| `KEYCLOAK_ADMIN_PASS` solo en `.vscode/.env.debug.local` (git-ignored) | ✅ |
+| Forzar cambio de password en primer login | ⚠️ Pendiente |
+| Entrega de credenciales por canal seguro (no chat/email) | ⚠️ Pendiente |
+| TTL para credenciales bootstrap | ⚠️ Pendiente |
+| Auditoría de onboarding (quién, cuándo, tenant) | ⚠️ Pendiente |
