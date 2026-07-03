@@ -219,6 +219,34 @@ docker exec $C psql -U postgres -d <tenant_slug> -f /tmp/clean-tenant-data.sql
 
 ---
 
+---
+
+## Ejemplo real ejecutado — tenant de demo
+
+```bash
+bash provision-tenant.sh \
+  db:default_tenant public \
+  '900987654-3' \
+  'Academia Fitness Demo S.A.S' \
+  'admin@academiafitness.co' \
+  --clean-data
+```
+
+**Resultado:**
+
+| Campo | Valor |
+|---|---|
+| `tenant_slug` (auto) | `ac900987654` |
+| NIT normalizado | `900987654` |
+| Keycloak UUID | `a872f080-83f8-4cc0-91e4-c510746a1df2` |
+| Login | `900987654` |
+| Password inicial | `900987654` |
+| Email | `admin@academiafitness.co` |
+
+El script es **idempotente**: si la DB ya existe salta el clone/create y solo actualiza registry, memberships, user_system y company_profile.
+
+---
+
 ## Seguridad
 
 | Ítem | Estado |
