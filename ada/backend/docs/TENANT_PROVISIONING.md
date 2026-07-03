@@ -49,27 +49,30 @@
 KEYCLOAK_ADMIN_PASS=<pass_keycloak_admin> \
 APP_PASSWORD_DB=<pass_appuser> \
 /home/ionosadmin/infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles/provision-tenant.sh \
-  <tenant_slug> db:default_tenant public <NIT> "Nombre Legal de la Empresa S.A.S" info@empresa.co
+  db:default_tenant public <NIT> "Nombre Legal de la Empresa S.A.S" info@empresa.co
 ```
+
+El `tenant_slug` se deriva **automáticamente**: primeras 2 letras del nombre de empresa (minúsculas) + NIT normalizado (sin espacios, puntos ni dígito de verificación).
+
+Ejemplo: `"Gym Performance"` + `"123.456.789-0"` → slug `gy123456789`
 
 ### Con limpieza de datos de negocio (tenant nuevo / QA)
 
 ```bash
 KEYCLOAK_ADMIN_PASS=<pass> APP_PASSWORD_DB=<pass> \
-./provision-tenant.sh <tenant_slug> db:default_tenant public <NIT> "Nombre Legal" info@empresa.co --clean-data
+./provision-tenant.sh db:default_tenant public <NIT> "Nombre Legal" info@empresa.co --clean-data
 ```
 
 ### Parámetros
 
 | Posición | Nombre | Ejemplo | Descripción |
 |---|---|---|---|
-| `$1` | `tenant_slug` | `gym_nueva` | Nombre de DB y runtime identifier del tenant |
-| `$2` | `source` | `db:default_tenant` | DB fuente a clonar o ruta a dump |
-| `$3` | `schemas` | `public` | Legacy; el script concede sobre todos los schemas |
-| `$4` | `nit` | `900123456` | NIT / número de identificación de la empresa |
-| `$5` | `company_name` | `"GymX S.A.S"` | Nombre legal de la empresa (quoted si tiene espacios) |
-| `$6` | `email` | `info@gymx.co` | *(opcional)* Email de contacto — Keycloak, ada_master y company_profile; default `admin@<slug>.local` |
-| `$7` | *(opcional)* | `--clean-data` | Limpia datos de negocio; mantiene catálogos y users id 1-2 |
+| `$1` | `source` | `db:default_tenant` | DB fuente a clonar o ruta a dump |
+| `$2` | `schemas` | `public` | Legacy; el script concede sobre todos los schemas |
+| `$3` | `nit` | `900.123.456-7` | NIT de la empresa; se normaliza automáticamente (sin puntos, sin dígito de verificación) |
+| `$4` | `company_name` | `"GymX S.A.S"` | Nombre legal (quoted si tiene espacios); las 2 primeras letras forman el prefijo del slug |
+| `$5` | `email` | `info@gymx.co` | *(opcional)* Email de contacto — Keycloak, ada_master y company_profile; default `admin@<slug>.local` |
+| `--clean-data` | *(flag opcional)* | `--clean-data` | Limpia datos de negocio; mantiene catálogos y solo el usuario id=1 |
 
 ### Variables de entorno requeridas
 
@@ -96,8 +99,8 @@ Si ya existe un usuario Keycloak con `username=<NIT>` (re-provisioning), solo ac
 ### ada_master.tenant_registry
 
 ```
-slug         = <tenant_slug>
-db_name      = <tenant_slug>
+slug         = <company_prefix><nit_normalizado>   ← derivado automáticamente
+db_name      = <slug>
 company_name = <company_name>     ← nombre legal para queries en ada_master
 mode         = 'business'
 status       = 'active'
@@ -144,15 +147,20 @@ El clone de `default_tenant` trae `company_profile` con datos de demo. El script
 > `ada_master.users.login = NIT` debe coincidir con `user_system.login = NIT`.
 > Por eso el script inserta un usuario nuevo en `user_system` con `login = NIT`.
 
+Con `--clean-data` (tenant nuevo), la secuencia de creación es:
+
+1. Clone → 2. Clean (solo queda id=1) → 3. Insert NIT admin → 4. Update company_profile
+
 | id | login | role | status | origen |
 |---|---|---|---|---|
-| 1 | `root` | 1 (super admin) | 1 | clone de `default_tenant` |
-| 2 | `admin` | 2 (System Administrator) | 1 | clone de `default_tenant` |
-| 3+ | `<NIT>` | **2 (System Administrator)** | 1 | **insertado por este script** |
+| 1 | `root` | 1 (super admin) | 1 | clone de `default_tenant`, siempre presente |
+| 2+ | `<NIT>` | **2 (System Administrator)** | 1 | **insertado por este script** |
+
+> Con `--clean-data` el usuario id=2 del clone queda eliminado; solo sobreviven id=1 y el nuevo NIT admin.
 
 El INSERT usa herencia JOINED (`person` → `user_system`):
 - `person.document_number = NIT`, `firts_name = company_name`, `full_name = company_name`
-- `user_system.login = NIT`, `role/status/company/cash/view` copiados de id=2
+- `user_system.login = NIT`, `role/status/company/cash/view` copiados de id=1
 
 ---
 
@@ -192,7 +200,7 @@ docker exec $C psql -U postgres -d ada_master \
 
 # Usuarios base en la DB de negocio
 docker exec $C psql -U postgres -d <tenant_slug> \
-  -c "SELECT id, login, role, status FROM public.user_system WHERE id IN (1,2) ORDER BY id;"
+  -c "SELECT id, login, role, status FROM public.user_system ORDER BY id;"
 ```
 
 ---
@@ -207,7 +215,7 @@ docker exec $C psql -U postgres -d <tenant_slug> -f /tmp/clean-tenant-data.sql
 ```
 
 **Qué limpia:** clientes, facturas, productos, empleados, contabilidad, diario, kardex, audit log. Resetea secuencias.
-**Mantiene:** catálogos, `company_profile`, usuarios id 1 y 2.
+**Mantiene:** catálogos, `company_profile`, usuario id=1 (root). La secuencia de `person` reinicia en 2.
 
 ---
 
