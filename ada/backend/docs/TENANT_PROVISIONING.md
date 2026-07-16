@@ -181,7 +181,18 @@ Con `--clean-data`, el orden es: clone → clean → insert NIT admin → update
 | `document_number` | `<NIT>` |
 | `email` | `<email>` |
 | `addres`, `phone`, `bank_account_number`… | `''` — el admin los rellena tras primer login |
-| Resto (locale, timezone, impuestos, impresoras…) | Sin tocar — heredan del clone |
+| Resto (locale, timezone, impuestos…) | Sin tocar — heredan del clone |
+
+#### Agente de impresión (`printer_agent_url` / `printer_agent_secret`)
+
+El agente de impresión es un proceso local que corre en el PC donde están conectadas las impresoras USB. El tenant lo configura desde **Perfil de empresa → Impresoras**.
+
+| Campo | Qué poner |
+|---|---|
+| `printer_agent_url` | URL del agente: `http://<IP-del-PC-con-impresora>:5000` |
+| `printer_agent_secret` | Token configurado en `print-agent.env` (`AGENT_SECRET`) |
+
+> **No usar `localhost`** — ADA corre en el servidor y `localhost` apuntaría al propio servidor, no al PC del cajero. Usar la IP local del PC donde está conectada la impresora (ver `hostname -I` en Linux o `ipconfig` en Windows).
 
 ---
 
