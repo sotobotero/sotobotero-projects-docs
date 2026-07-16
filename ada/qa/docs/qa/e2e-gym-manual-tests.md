@@ -3,7 +3,7 @@
 > Ejecutar en orden. Cada sección asume que la anterior se completó.  
 > URL staging: `https://ada.sotobotero.com/ADA_ENTERPISE_CORE`
 
----
+
 
 ## ¿Qué problema resuelve este sistema?
 
