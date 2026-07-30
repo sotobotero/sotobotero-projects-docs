@@ -34,8 +34,10 @@ provision-tenant.sh (host)
                ├─ (opcional --clean-data) Limpia datos de negocio
                ├─ INSERT person + user_system (NIT admin, copiado de root id=1)
                ├─ UPDATE company_profile (name, NIT, email; limpia campos del clone)
-               └─ (opcional --country=XX) Trunca nomenclature, resembra geografía del país
-                    y actualiza company_profile.country al país indicado
+               ├─ (opcional --country=XX) Trunca nomenclature, resembra geografía del país
+               │    y actualiza company_profile.country al país indicado
+               └─ (opcional --seed-consumidor-final) Inserta Consumidor Final DIAN 222222222222
+                    con geografía resuelta automáticamente si --country=CO fue especificado
 ```
 
 ## Flujo de destroy
@@ -78,7 +80,8 @@ bash provision-tenant.sh \
   "Nombre Legal de la Empresa S.A.S" \
   info@empresa.co \
   --clean-data \
-  --country=CO
+  --country=CO \
+  --seed-consumidor-final
 ```
 
 El `tenant_slug` se deriva **automáticamente**:
@@ -98,6 +101,7 @@ El NIT se puede ingresar normalizado o en formato colombiano estándar (`123.456
 | `$5` | `email` | `info@empresa.co` | *(opcional)* Email admin; default `admin@<slug>.local` |
 | `--clean-data` | *(flag)* | `--clean-data` | Limpia datos de negocio del clone; mantiene solo catálogos e id=1 |
 | `--country=XX` | *(flag)* | `--country=CO` | Trunca `public.nomenclature` y la resembra con el seed del país indicado (código ISO). Actualiza además `company_profile.country`. Sin este flag se conserva la nomenclatura clonada. Disponible: `CO` (Colombia), `ES` (España). |
+| `--seed-consumidor-final` | *(flag)* | `--seed-consumidor-final` | Inserta el cliente "Consumidor Final" (NIT DIAN 222222222222) requerido para facturación electrónica colombiana (Resolución 000042/2020). La geografía (Colombia/Bogotá D.C.) se resuelve automáticamente si `--country=CO` fue especificado. Idempotente — no falla si ya existe. |
 
 ### Idempotencia
 
@@ -220,7 +224,8 @@ bash provision-tenant.sh \
   'Academia Fitness Demo S.A.S' \
   'admin@academiafitness.co' \
   --clean-data \
-  --country=CO
+  --country=CO \
+  --seed-consumidor-final
 ```
 
 | Campo | Valor |
