@@ -33,7 +33,9 @@ provision-tenant.sh (host)
                ├─ Memberships: NIT + root → tenant (role='owner')
                ├─ (opcional --clean-data) Limpia datos de negocio
                ├─ INSERT person + user_system (NIT admin, copiado de root id=1)
-               └─ UPDATE company_profile (name, NIT, email; limpia campos del clone)
+               ├─ UPDATE company_profile (name, NIT, email; limpia campos del clone)
+               └─ (opcional --country=XX) Trunca nomenclature, resembra geografía del país
+                    y actualiza company_profile.country al país indicado
 ```
 
 ## Flujo de destroy
@@ -75,7 +77,8 @@ bash provision-tenant.sh \
   <NIT> \
   "Nombre Legal de la Empresa S.A.S" \
   info@empresa.co \
-  --clean-data
+  --clean-data \
+  --country=CO
 ```
 
 El `tenant_slug` se deriva **automáticamente**:
@@ -94,6 +97,7 @@ El NIT se puede ingresar normalizado o en formato colombiano estándar (`123.456
 | `$4` | `company_name` | `"Academia Fitness S.A.S"` | Nombre legal (quoted si tiene espacios) |
 | `$5` | `email` | `info@empresa.co` | *(opcional)* Email admin; default `admin@<slug>.local` |
 | `--clean-data` | *(flag)* | `--clean-data` | Limpia datos de negocio del clone; mantiene solo catálogos e id=1 |
+| `--country=XX` | *(flag)* | `--country=CO` | Trunca `public.nomenclature` y la resembra con el seed del país indicado (código ISO). Actualiza además `company_profile.country`. Sin este flag se conserva la nomenclatura clonada. Disponible: `CO` (Colombia), `ES` (España). |
 
 ### Idempotencia
 
@@ -180,6 +184,7 @@ Con `--clean-data`, el orden es: clone → clean → insert NIT admin → update
 | `name` | `<company_name>` |
 | `document_number` | `<NIT>` |
 | `email` | `<email>` |
+| `country` | Nomenclature del país (`--country=CO` → Colombia) — solo si se pasa el flag |
 | `addres`, `phone`, `bank_account_number`… | `''` — el admin los rellena tras primer login |
 | Resto (locale, timezone, impuestos…) | Sin tocar — heredan del clone |
 
@@ -214,7 +219,8 @@ bash provision-tenant.sh \
   '900987654-3' \
   'Academia Fitness Demo S.A.S' \
   'admin@academiafitness.co' \
-  --clean-data
+  --clean-data \
+  --country=CO
 ```
 
 | Campo | Valor |
