@@ -65,6 +65,7 @@ destroy-tenant.sh (host)
 - Acceso SSH al servidor Ionos: `ssh ionos`
 - Acceso a Docker en el servidor (para `docker exec` / `docker ps`)
 - Contenedores `staging-infra_keycloak.*` y `staging-infra_patroni.*` corriendo
+- **Email de bienvenida (opcional):** crear `docker-compose/config/.env.smtp` a partir de `.env.smtp.example` con las credenciales SMTP reales. Si el archivo no existe el provisioning igual completa — solo omite el email.
 
 ---
 
@@ -215,6 +216,24 @@ El agente de impresión es un proceso local que corre en el PC donde están cone
 
 ---
 
+## Entregable al cliente
+
+Tabla lista para entregar tras cada provisioning. Reemplazar los campos entre `< >`.
+
+| Campo | Valor |
+|---|---|
+| **Empresa** | `<Nombre Legal>` |
+| **Tenant** | `<tenant_slug>` |
+| **Usuario** | `<NIT>` |
+| **Contraseña inicial** | `<NIT>` ⚠️ cambiar en primer acceso |
+| **Email** | `<email>` |
+| **Backend (ADA)** | https://ada.sotobotero.com/ADA_ENTERPISE_CORE/ |
+| **Frontend / carga de inventario** | https://arcadia.sotobotero.com |
+| **Reportes (Grafana)** | https://arcadia.sotobotero.com/grafana |
+| **Guía de usuario** | https://github.com/sotobotero/sotobotero-projects-docs/blob/master/ada/qa/docs/qa/e2e-happy-path-inventario-facturacion.md |
+
+---
+
 ## Ejemplo real ejecutado
 
 ```bash
@@ -274,4 +293,4 @@ docker exec $C psql -U postgres -d <tenant_slug> \
 | Ningún secret en código, logs ni git | ✅ |
 | Confirmación explícita (escribir slug) antes de destroy | ✅ |
 | Forzar cambio de password en primer login | ⚠️ Pendiente |
-| Entrega de credenciales por canal seguro (no chat/email) | ⚠️ Pendiente |
+| Entrega de credenciales al cliente | ✅ Email de bienvenida automático (requiere `.env.smtp`) |
