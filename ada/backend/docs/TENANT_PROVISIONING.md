@@ -4,8 +4,9 @@
 
 | Script | Dónde corre | Rol |
 |---|---|---|
-| `provision-tenant.sh` | Host (Ionos) | Orquesta Keycloak + DB — punto de entrada |
-| `provision-tenant-db.sh` | Contenedor Patroni | Operaciones psql (llamado por el anterior) |
+| `provision-tenant.sh` | Host (Ionos) | Orquesta Keycloak + DB — punto de entrada para producción/staging |
+| `provision-tenant-db.sh` | Contenedor Patroni | Operaciones psql (llamado por los anteriores) |
+| `provision-tenant-local.sh` | Máquina local del dev | Provisiona tenant en postgres local + Ionos Keycloak vía HTTP (sin Docker ni SSH) |
 | `destroy-tenant.sh` | Host (Ionos) | Destruye un tenant completo — irreversible |
 | `destroy-tenant-db.sh` | Contenedor Patroni | DROP DB + limpieza ada_master (llamado por el anterior) |
 
@@ -15,7 +16,39 @@ Todos en: `infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles
 
 ---
 
-## Flujo de provisioning
+## Provisioning local (dev)
+
+Usar cuando se necesita un tenant en la máquina local del dev para probar el flujo de autenticación sin desplegar a Ionos. No requiere Docker Swarm ni acceso SSH.
+
+**Qué hace:**
+- Llama a Ionos Keycloak (`sso.sotobotero.com`) por HTTP para crear/actualizar el usuario con `UPDATE_PASSWORD` — el mismo Keycloak al que ya apunta ADA local en `.env.debug.local`, sin ningún contenedor local
+- Clona `default_tenant` → nuevo DB en postgres local (`localhost:5432`) vía `CREATE DATABASE … TEMPLATE` (sin pg_dump, evita incompatibilidades de versión)
+- Registra el tenant en `ada_master` local: `tenant_registry`, `users` (con `keycloak_id`), `memberships`, `user_system`, `company_profile`
+
+**Prerequisito** — asegurarse de que `.vscode/.env.debug.local` tenga:
+```
+ADA_KEYCLOAK_LOGIN_ENABLED=true   # ADA autentica vía Keycloak ROPC
+```
+
+**Uso:**
+```bash
+cd infraestructure-ascode/docker-compose/postgres/db/dbfiles/otherfiles
+
+bash provision-tenant-local.sh \
+  db:default_tenant public \
+  <NIT> "<Nombre Legal>" [email] \
+  --clean-data
+```
+
+**Ejemplo:**
+```bash
+bash provision-tenant-local.sh db:default_tenant public 999888001 "Astral Studio" --clean-data
+# Login: 999888001 / 999888001 → muestra panel de cambio forzado
+```
+
+---
+
+## Flujo de provisioning (Ionos)
 
 ```
 provision-tenant.sh (host)
