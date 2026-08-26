@@ -175,7 +175,7 @@ El RBAC falta porque `Employee` aún no llega a `UserSystem`. Son dos conceptos 
 2. ✅ `login` y `password` nullable en `public.user_system` — migración 021
 3. ✅ `employee.role` renombrado a `employee.job_position` — migración 022
 
-ADR: [`.ai/decisions/2026-05-02-employee-extends-usersystem-rbac.md`](../.ai/decisions/2026-05-02-employee-extends-usersystem-rbac.md) — incluye deuda LSP documentada.
+ADR: [`.ai/ADRs/ADR-001-iam-global-identity-party-roles.md`](../.ai/ADRs/ADR-001-iam-global-identity-party-roles.md) — IAM model, Party-Role pattern, LSP constraints.
 
 ### `Customer` (billing) — no requiere alineación a `UserSystem`
 
