@@ -249,6 +249,32 @@ El agente de impresión es un proceso local que corre en el PC donde están cone
 
 ---
 
+## Provisionar datasource en Grafana
+
+Tras crear un tenant, si se quiere que aparezca en los dashboards de Grafana hay que registrarlo como datasource vía la API HTTP de Grafana. No requiere reiniciar el contenedor.
+
+```bash
+curl -s -X POST http://admin:admin@localhost:3000/api/datasources \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"name\": \"<tenant_slug>\",
+    \"type\": \"postgres\",
+    \"access\": \"proxy\",
+    \"url\": \"host.docker.internal:5432\",
+    \"database\": \"<tenant_slug>\",
+    \"user\": \"appuser\",
+    \"secureJsonData\": { \"password\": \"appuser123\" },
+    \"jsonData\": { \"sslmode\": \"disable\", \"postgresVersion\": 1500 },
+    \"isDefault\": false
+  }"
+```
+
+Para staging cambiar `host.docker.internal:5432` por `haproxy:5432` y `localhost:3000` por la URL de Grafana en staging.
+
+Referencia completa: [`infraestructure-ascode/docker-compose/services/grafana/README.md`](../../infraestructure-ascode/docker-compose/services/grafana/README.md) — sección "Gestión de datasources via API".
+
+---
+
 ## Entregable al cliente
 
 Tabla lista para entregar tras cada provisioning. Reemplazar los campos entre `< >`.
