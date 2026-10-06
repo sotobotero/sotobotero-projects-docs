@@ -1,0 +1,969 @@
+<title>ADA Manual de Marca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+/* ── TOKENS ── */
+:root {
+  --brand:    #0D9488;
+  --brand-dk: #0F766E;
+  --brand-lt: #F0FDFA;
+  --amber:    #F59E0B;
+  --amber-lt: #FFFBEB;
+  --ink:      #0F172A;
+  --muted:    #64748B;
+  --bg:       #F8FAFC;
+  --surface:  #FFFFFF;
+  --border:   #E2E8F0;
+  --f:        'Plus Jakarta Sans', system-ui, sans-serif;
+  --pad:      clamp(16px, 5vw, 56px);
+  --max:      860px;
+  --r:        12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --brand-lt: #042F2E;
+    --amber-lt: #1C1200;
+    --ink:      #F1F5F9;
+    --muted:    #94A3B8;
+    --bg:       #0F172A;
+    --surface:  #1E293B;
+    --border:   #334155;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --brand-lt: #042F2E;
+  --amber-lt: #1C1200;
+  --ink:      #F1F5F9;
+  --muted:    #94A3B8;
+  --bg:       #0F172A;
+  --surface:  #1E293B;
+  --border:   #334155;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--f);
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── LAYOUT ── */
+.wrap {
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+
+.sec {
+  padding-block: 72px;
+}
+
+.sec.alt {
+  background: var(--surface);
+}
+
+/* ── SECTION CHROME ── */
+.sec-num {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 8px;
+}
+
+.sec-h {
+  font-size: clamp(26px, 3.5vw, 38px);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--ink);
+  text-wrap: balance;
+  margin-bottom: 36px;
+}
+
+/* ── PORTADA ── */
+.cover {
+  background: #0F172A;
+  padding: clamp(48px, 8vw, 88px) var(--pad);
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cover::before {
+  content: 'ADA';
+  position: absolute;
+  right: -20px;
+  top: -30px;
+  font-weight: 800;
+  font-size: clamp(220px, 40vw, 380px);
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.025);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cover-wordmark {
+  font-size: clamp(72px, 14vw, 140px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: #fff;
+  position: relative;
+}
+
+.cover-wordmark::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 4px;
+  background: var(--brand);
+  border-radius: 100px;
+  margin-top: 18px;
+}
+
+.cover-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  position: relative;
+}
+
+.cover-tagline {
+  font-size: clamp(16px, 2.5vw, 22px);
+  font-weight: 400;
+  color: rgba(255,255,255,0.5);
+}
+
+.cover-meta {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+/* ── ESSENCE ── */
+.essence-quote {
+  font-size: clamp(18px, 2.5vw, 24px);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--ink);
+  padding-left: 22px;
+  border-left: 4px solid var(--amber);
+  margin-bottom: 52px;
+  max-width: 620px;
+  text-wrap: balance;
+}
+
+.values {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+}
+
+@media (max-width: 600px) {
+  .values { grid-template-columns: 1fr; }
+}
+
+.value {
+  padding: 24px 24px 24px 0;
+  border-top: 3px solid var(--brand);
+}
+
+.value:not(:last-child) {
+  padding-right: 28px;
+  border-right: 1px solid var(--border);
+  margin-right: 28px;
+}
+
+@media (max-width: 600px) {
+  .value { padding-right: 0; border-right: none; margin-right: 0; }
+  .value:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); margin-right: 0; padding-bottom: 24px; margin-bottom: 24px; }
+}
+
+.value-n {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--brand);
+  margin-bottom: 8px;
+}
+
+.value p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── WORDMARK ── */
+.wm-panels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 560px) {
+  .wm-panels { grid-template-columns: 1fr; }
+}
+
+.wm-panel {
+  border-radius: var(--r);
+  padding: 36px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.wm-panel.on-white { background: var(--surface); border: 1px solid var(--border); }
+.wm-panel.on-teal  { background: var(--brand); }
+.wm-panel.on-dark  { background: #0F172A; }
+
+.wm-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.on-white .wm-label { color: var(--muted); }
+.on-teal  .wm-label { color: rgba(255,255,255,0.5); }
+.on-dark  .wm-label { color: rgba(255,255,255,0.35); }
+
+.wm-text {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+.on-white .wm-text { color: var(--brand); }
+.on-teal  .wm-text { color: #fff; }
+.on-dark  .wm-text { color: #fff; }
+
+/* Tamaños */
+.wm-sizes {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 24px 28px;
+  display: flex;
+  align-items: flex-end;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.sec .wm-sizes { background: var(--bg); }
+
+.wm-sz { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+
+.wm-sz-text {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--brand);
+  line-height: 1;
+}
+
+.wm-sz-label {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.wm-min-note {
+  font-size: 12px;
+  color: var(--muted);
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Don'ts */
+.donts-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 560px) {
+  .donts-row { grid-template-columns: 1fr 1fr; }
+}
+
+.dont-panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.sec .dont-panel { background: var(--bg); }
+
+.dont-demo {
+  background: var(--bg);
+  padding: 16px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sec .dont-demo { background: var(--surface); }
+
+.dont-info {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.sec .dont-info { background: var(--bg); }
+
+.dont-x {
+  width: 16px; height: 16px;
+  background: #EF4444;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dont-txt { font-size: 11px; color: var(--muted); line-height: 1.3; }
+
+/* ── SISTEMA VISUAL ── */
+.visual-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+@media (max-width: 600px) {
+  .visual-grid { grid-template-columns: 1fr; }
+}
+
+.visual-block h3 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 16px;
+}
+
+.colors { display: flex; flex-direction: column; gap: 10px; }
+
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.sec.alt .color-row { background: var(--bg); }
+
+.color-swatch {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.color-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  display: block;
+}
+
+.color-detail {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  display: block;
+  margin-top: 2px;
+}
+
+.type-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 22px;
+  background: var(--surface);
+  margin-bottom: 12px;
+}
+
+.sec.alt .type-card { background: var(--bg); }
+
+.type-role {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.type-specimen-h {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--brand);
+  margin-bottom: 6px;
+}
+
+.type-specimen-b {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--ink);
+}
+
+.type-name {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── VOZ ── */
+.voice-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .voice-row { grid-template-columns: 1fr; }
+}
+
+.voice-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--brand);
+  border-radius: 0 var(--r) var(--r) 0;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sec .voice-card { background: var(--bg); }
+
+.voice-attr {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--brand);
+}
+
+.voice-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.ex {
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ex.good {
+  background: var(--brand-lt);
+  color: var(--brand-dk);
+  border-left: 3px solid var(--brand);
+}
+
+.ex.bad {
+  background: #FEE2E2;
+  color: #991B1B;
+  border-left: 3px solid #EF4444;
+  text-decoration: line-through;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .ex.good { background: #042F2E; color: #5EEAD4; }
+  :root:not([data-theme="light"]) .ex.bad  { background: #2D1515; color: #FCA5A5; }
+}
+:root[data-theme="dark"] .ex.good { background: #042F2E; color: #5EEAD4; }
+:root[data-theme="dark"] .ex.bad  { background: #2D1515; color: #FCA5A5; }
+
+/* ── CONTEXTOS ── */
+.contexts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .contexts { grid-template-columns: 1fr; }
+}
+
+.ctx-card {
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.sec.alt .ctx-card { background: var(--bg); }
+
+.ctx-screen {
+  padding: 24px 16px;
+  min-height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ctx-label {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Receipt */
+.receipt {
+  background: #fff;
+  border-radius: 3px;
+  padding: 14px 18px;
+  width: 170px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.14);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #0F172A;
+}
+
+.receipt-name {
+  font-family: var(--f);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #0D9488;
+  text-align: center;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.receipt-line { border-top: 1px dashed #CBD5E1; margin: 6px 0; }
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  color: #475569;
+  margin: 2px 0;
+  font-size: 10px;
+}
+
+.receipt-total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  color: #0D9488;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+/* WhatsApp */
+.wa-shell {
+  background: #E5DDD5;
+  border-radius: 10px;
+  overflow: hidden;
+  width: 196px;
+}
+
+.wa-bar {
+  background: #0D9488;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wa-avatar {
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.wa-contact { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.1; }
+.wa-status  { font-size: 10px; color: rgba(255,255,255,0.65); }
+
+.wa-body { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+
+.wa-msg {
+  background: #fff;
+  border-radius: 3px 8px 8px 8px;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: #1C2B22;
+  line-height: 1.4;
+  max-width: 160px;
+}
+
+.wa-time { font-size: 10px; color: rgba(0,0,0,0.4); text-align: right; margin-top: 3px; }
+
+/* Push notif */
+.notif-shell {
+  background: #1E293B;
+  border-radius: 10px;
+  padding: 12px 14px;
+  width: 196px;
+}
+
+.notif-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+
+.notif-dot {
+  width: 14px; height: 14px;
+  background: var(--brand);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+}
+
+.notif-app  { font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.notif-time { font-size: 10px; color: rgba(255,255,255,0.25); margin-left: auto; }
+.notif-title{ font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+.notif-body { font-size: 11px; color: rgba(255,255,255,0.55); line-height: 1.4; }
+
+/* ── FOOTER ── */
+footer {
+  background: #0A0F1A;
+  padding: 22px var(--pad);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-wm {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.2);
+}
+
+footer p { font-size: 11px; color: #1E293B; }
+</style>
+
+<!-- ══ PORTADA ══════════════════════════════════════════ -->
+<div class="cover">
+  <p class="cover-wordmark">ADA</p>
+  <div class="cover-bottom">
+    <p class="cover-tagline">Tu operación, en control.</p>
+    <span class="cover-meta">Manual de Marca · v3 · 2026</span>
+  </div>
+</div>
+
+<!-- ══ 01 ESENCIA ══════════════════════════════════════ -->
+<section class="sec">
+  <div class="wrap">
+    <p class="sec-num">01 — Por qué existe ADA</p>
+    <h2 class="sec-h">La marca en una oración</h2>
+
+    <p class="essence-quote">ADA existe para que cualquier negocio tenga control real de su operación — sin necesitar saber de tecnología.</p>
+
+    <div class="values">
+      <div class="value">
+        <p class="value-n">Simple</p>
+        <p>Si sabes usar WhatsApp, sabes usar ADA. Sin manuales técnicos, sin dependencia de un técnico para cada cambio.</p>
+      </div>
+      <div class="value">
+        <p class="value-n">Confiable</p>
+        <p>En la nube, siempre disponible. La información del negocio está donde el dueño la necesita, cuando la necesita.</p>
+      </div>
+      <div class="value">
+        <p class="value-n">Para todos</p>
+        <p>Desde una droguería de barrio hasta una cadena de consultorios. El tamaño no define quién puede operar bien.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 02 EL WORDMARK ══════════════════════════════════ -->
+<section class="sec alt">
+  <div class="wrap">
+    <p class="sec-num">02 — El wordmark</p>
+    <h2 class="sec-h">El nombre es la marca</h2>
+
+    <div class="wm-panels">
+      <div class="wm-panel on-white">
+        <span class="wm-label">Uso principal</span>
+        <span class="wm-text">ADA</span>
+      </div>
+      <div class="wm-panel on-teal">
+        <span class="wm-label">Sobre teal</span>
+        <span class="wm-text">ADA</span>
+      </div>
+      <div class="wm-panel on-dark">
+        <span class="wm-label">Sobre oscuro</span>
+        <span class="wm-text">ADA</span>
+      </div>
+    </div>
+
+    <div class="wm-sizes">
+      <div class="wm-sz">
+        <span class="wm-sz-text" style="font-size:56px">ADA</span>
+        <span class="wm-sz-label">Grande</span>
+      </div>
+      <div class="wm-sz">
+        <span class="wm-sz-text" style="font-size:36px">ADA</span>
+        <span class="wm-sz-label">Medio</span>
+      </div>
+      <div class="wm-sz">
+        <span class="wm-sz-text" style="font-size:22px">ADA</span>
+        <span class="wm-sz-label">Pequeño</span>
+      </div>
+      <div class="wm-sz">
+        <span class="wm-sz-text" style="font-size:14px">ADA</span>
+        <span class="wm-sz-label">Mínimo</span>
+      </div>
+      <p class="wm-min-note">Tamaño mínimo: 14px en pantalla. Por debajo, usar solo el nombre sin slogan acompañante.</p>
+    </div>
+
+    <p class="sec-num" style="margin-bottom:14px">Evita esto</p>
+    <div class="donts-row">
+      <div class="dont-panel">
+        <div class="dont-demo">
+          <span style="font-size:32px;font-weight:800;color:#0D9488;transform:rotate(-12deg);display:inline-block;letter-spacing:0.08em">ADA</span>
+        </div>
+        <div class="dont-info"><div class="dont-x">✕</div><span class="dont-txt">No lo inclines ni lo rotas</span></div>
+      </div>
+      <div class="dont-panel">
+        <div class="dont-demo">
+          <span style="font-family:Georgia,serif;font-size:32px;color:#0D9488;letter-spacing:0.04em">ADA</span>
+        </div>
+        <div class="dont-info"><div class="dont-x">✕</div><span class="dont-txt">Solo Plus Jakarta Sans 800</span></div>
+      </div>
+      <div class="dont-panel">
+        <div class="dont-demo">
+          <span style="font-size:32px;font-weight:800;color:#0D9488;display:inline-block;transform:scaleX(1.6);letter-spacing:0.08em">ADA</span>
+        </div>
+        <div class="dont-info"><div class="dont-x">✕</div><span class="dont-txt">No lo estires ni aplastes</span></div>
+      </div>
+      <div class="dont-panel">
+        <div class="dont-demo" style="background:#0D9488">
+          <span style="font-size:32px;font-weight:800;color:#0E9589;letter-spacing:0.08em">ADA</span>
+        </div>
+        <div class="dont-info"><div class="dont-x">✕</div><span class="dont-txt">Siempre con contraste legible</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 03 SISTEMA VISUAL ════════════════════════════════ -->
+<section class="sec">
+  <div class="wrap">
+    <p class="sec-num">03 — Sistema visual</p>
+    <h2 class="sec-h">Color y tipografía</h2>
+
+    <div class="visual-grid">
+      <!-- Paleta -->
+      <div class="visual-block">
+        <h3>Paleta</h3>
+        <div class="colors">
+          <div class="color-row">
+            <div class="color-swatch" style="background:#0D9488"></div>
+            <div>
+              <span class="color-name">Teal ADA</span>
+              <span class="color-detail">#0D9488 · Color principal de marca</span>
+            </div>
+          </div>
+          <div class="color-row">
+            <div class="color-swatch" style="background:#F59E0B"></div>
+            <div>
+              <span class="color-name">Ámbar</span>
+              <span class="color-detail">#F59E0B · Acento, CTA y Agendamiento</span>
+            </div>
+          </div>
+          <div class="color-row">
+            <div class="color-swatch" style="background:#0F172A"></div>
+            <div>
+              <span class="color-name">Slate oscuro</span>
+              <span class="color-detail">#0F172A · Fondos oscuros y hero</span>
+            </div>
+          </div>
+          <div class="color-row">
+            <div class="color-swatch" style="background:#F8FAFC;border:1px solid #E2E8F0"></div>
+            <div>
+              <span class="color-name">Slate claro</span>
+              <span class="color-detail">#F8FAFC · Fondo de página</span>
+            </div>
+          </div>
+          <div class="color-row">
+            <div class="color-swatch" style="background:#64748B"></div>
+            <div>
+              <span class="color-name">Slate medio</span>
+              <span class="color-detail">#64748B · Texto secundario</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tipografía -->
+      <div class="visual-block">
+        <h3>Tipografía</h3>
+        <div class="type-card">
+          <p class="type-role">Una sola familia — titulares</p>
+          <p class="type-specimen-h">Gestión sin enredos</p>
+          <p class="type-name">Plus Jakarta Sans · 800 ExtraBold</p>
+        </div>
+        <div class="type-card">
+          <p class="type-role">Una sola familia — cuerpo</p>
+          <p class="type-specimen-b">Tu inventario, tus ventas y tus clientes en un solo lugar. Sin instalar nada, desde el primer día.</p>
+          <p class="type-name">Plus Jakarta Sans · 400 Regular / 700 Bold</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 04 VOZ ════════════════════════════════════════════ -->
+<section class="sec alt">
+  <div class="wrap">
+    <p class="sec-num">04 — Tono de voz</p>
+    <h2 class="sec-h">Cómo habla ADA</h2>
+
+    <div class="voice-row">
+      <div class="voice-card">
+        <p class="voice-attr">Claro</p>
+        <p class="voice-desc">Sin jerga técnica. Si el cliente necesita buscador para entenderte, el texto está mal escrito.</p>
+        <div class="ex good">Tu inventario actualizado al instante.</div>
+        <div class="ex bad">Sincronización de base de datos en tiempo real.</div>
+      </div>
+      <div class="voice-card">
+        <p class="voice-attr">Directo</p>
+        <p class="voice-desc">Va al grano. Sin rodeos ni frases de presentación corporativa.</p>
+        <div class="ex good">¿Tienes un Excel? Lo cargamos.</div>
+        <div class="ex bad">Disponemos de herramientas de migración para facilitar su transición.</div>
+      </div>
+      <div class="voice-card">
+        <p class="voice-attr">Cercano</p>
+        <p class="voice-desc">Trata de tú. ADA es un aliado, no un proveedor con traje.</p>
+        <div class="ex good">Arranca hoy. Te acompañamos en el primer día.</div>
+        <div class="ex bad">El usuario puede iniciar el proceso de activación.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 05 EN EL MUNDO REAL ══════════════════════════════ -->
+<section class="sec">
+  <div class="wrap">
+    <p class="sec-num">05 — ADA en el mundo real</p>
+    <h2 class="sec-h">Así se ve la marca en los canales que usa</h2>
+
+    <div class="contexts">
+
+      <!-- Recibo térmico -->
+      <div class="ctx-card">
+        <div class="ctx-screen" style="background:#E2E8F0">
+          <div class="receipt">
+            <span class="receipt-name">ADA</span>
+            <div class="receipt-line"></div>
+            <div class="receipt-row"><span>FECHA</span><span>05/10/2026</span></div>
+            <div class="receipt-row"><span>CLIENTE</span><span>Consumidor</span></div>
+            <div class="receipt-line"></div>
+            <div class="receipt-row"><span>Acetaminofén 500mg</span><span>$4.500</span></div>
+            <div class="receipt-row"><span>Ibuprofeno 400mg x10</span><span>$8.200</span></div>
+            <div class="receipt-line"></div>
+            <div class="receipt-total"><span>TOTAL</span><span>$12.700</span></div>
+            <div class="receipt-line"></div>
+            <div style="text-align:center;color:#94A3B8;font-size:10px;margin-top:4px">¡Gracias por su compra!</div>
+          </div>
+        </div>
+        <p class="ctx-label">Recibo térmico POS</p>
+      </div>
+
+      <!-- WhatsApp -->
+      <div class="ctx-card">
+        <div class="ctx-screen" style="background:#C9D0C9">
+          <div class="wa-shell">
+            <div class="wa-bar">
+              <div class="wa-avatar">ADA</div>
+              <div>
+                <p class="wa-contact">ADA · Soporte</p>
+                <p class="wa-status">en línea</p>
+              </div>
+            </div>
+            <div class="wa-body">
+              <div class="wa-msg">
+                Hola, tu inventario del lote 2026-10 tiene 3 productos próximos a vencer. Entra a revisar.
+                <p class="wa-time">10:42 a.m.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="ctx-label">Notificación WhatsApp</p>
+      </div>
+
+      <!-- Push notification -->
+      <div class="ctx-card">
+        <div class="ctx-screen" style="background:#0F172A">
+          <div class="notif-shell">
+            <div class="notif-top">
+              <div class="notif-dot">ADA</div>
+              <span class="notif-app">ADA</span>
+              <span class="notif-time">ahora</span>
+            </div>
+            <p class="notif-title">Alerta de vencimiento</p>
+            <p class="notif-body">Lote 2026-09 vence en 15 días. 42 unidades en bodega pendientes de revisión.</p>
+          </div>
+        </div>
+        <p class="ctx-label">Notificación en dispositivo</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══════════════════════════════════════════ -->
+<footer>
+  <span class="footer-wm">ADA</span>
+  <p>Manual de Marca v3 · Documento interno · 2026</p>
+</footer>
