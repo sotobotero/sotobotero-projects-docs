@@ -249,29 +249,14 @@ El agente de impresión es un proceso local que corre en el PC donde están cone
 
 ---
 
-## Provisionar datasource en Grafana
+## Acceso a Grafana
 
-Tras crear un tenant, si se quiere que aparezca en los dashboards de Grafana hay que registrarlo como datasource vía la API HTTP de Grafana. No requiere reiniciar el contenedor.
+No hay que registrar nada en Grafana al crear un tenant: el plugin `tenant-postgres` lista los tenants desde las
+membresías de `ada_master` del usuario y consulta la base del tenant (slug = nombre de la base) con el usuario
+único `appuser`. Basta con que el provisioning cree la membresía activa y que las migraciones `tenant` (incluidas
+las de permisos de dashboards, 128 y 129) estén aplicadas en la base nueva.
 
-```bash
-curl -s -X POST http://admin:admin@localhost:3000/api/datasources \
-  -H "Content-Type: application/json" \
-  -d "{
-    \"name\": \"<tenant_slug>\",
-    \"type\": \"postgres\",
-    \"access\": \"proxy\",
-    \"url\": \"host.docker.internal:5432\",
-    \"database\": \"<tenant_slug>\",
-    \"user\": \"appuser\",
-    \"secureJsonData\": { \"password\": \"appuser123\" },
-    \"jsonData\": { \"sslmode\": \"disable\", \"postgresVersion\": 1500 },
-    \"isDefault\": false
-  }"
-```
-
-Para staging cambiar `host.docker.internal:5432` por `haproxy:5432` y `localhost:3000` por la URL de Grafana en staging.
-
-Referencia completa: [`infraestructure-ascode/docker-compose/services/grafana/README.md`](../../infraestructure-ascode/docker-compose/services/grafana/README.md) — sección "Gestión de datasources via API".
+Arquitectura, permisos por dashboard y diagnóstico: [GRAFANA_ANALYTICS_ACCESS.md](GRAFANA_ANALYTICS_ACCESS.md).
 
 ---
 
