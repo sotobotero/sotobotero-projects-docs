@@ -135,6 +135,9 @@ El NIT se puede ingresar normalizado o en formato colombiano estándar (`123.456
 | `$5` | `email` | `info@empresa.co` | *(opcional)* Email admin; default `admin@<slug>.local` |
 | `--clean-data` | *(flag)* | `--clean-data` | Limpia datos de negocio del clone; mantiene solo catálogos e id=1 |
 | `--country=XX` | *(flag)* | `--country=CO` | Trunca `public.nomenclature` y la resembra con el seed del país indicado (código ISO). Actualiza además `company_profile.country`. Sin este flag se conserva la nomenclatura clonada. Disponible: `CO` (Colombia), `ES` (España). |
+| `--public-booking=<host>` | *(flag)* | `--public-booking=reservas.ejemplo.com` | Abre la reserva anónima del tenant en ese host: inserta `ada_master.tenant_domains` y pone `company_profile.public_booking_enabled = true`. Sin el flag el tenant no expone nada público. El host debe llegar a ADA por un `server` de nginx. Ver [API pública](PUBLIC_API_AND_ACCESS_CONTROL.md). |
+| `--max-users=N` | *(flag)* | `--max-users=5` | Licencia: usuarios nominales permitidos (no cuentan `root` ni el rol `client`). Por defecto 3. |
+| `--access-months=N` | *(flag)* | `--access-months=12` | Licencia: meses de acceso desde hoy (`access_until`). Por defecto 12. |
 | `--seed-consumidor-final` | *(flag)* | `--seed-consumidor-final` | Inserta el cliente "Consumidor Final" (NIT DIAN 222222222222) requerido para facturación electrónica colombiana (Resolución 000042/2020). La geografía (Colombia/Bogotá D.C.) se resuelve automáticamente si `--country=CO` fue especificado. Idempotente — no falla si ya existe. |
 
 ### Idempotencia
@@ -188,6 +191,8 @@ db_name      = <slug>
 company_name = <company_name>
 mode         = 'business'
 status       = 'active'
+max_users    = 3 (o --max-users)
+access_until = now() + 12 meses (o --access-months)
 ```
 
 ### ada_master.users + memberships
@@ -272,8 +277,8 @@ Tabla lista para entregar tras cada provisioning. Reemplazar los campos entre `<
 | **Contraseña inicial** | `<NIT>` ⚠️ cambiar en primer acceso |
 | **Email** | `<email>` |
 | **Backend (ADA)** | https://ada.sotobotero.com/ADA_ENTERPISE_CORE/ |
-| **Frontend / carga de inventario** | https://arcadia.sotobotero.com |
-| **Reportes (Grafana)** | https://arcadia.sotobotero.com/grafana |
+| **Frontend / carga de inventario** | https://ada.sotobotero.com |
+| **Reportes (Grafana)** | https://ada.sotobotero.com/grafana |
 | **Guía de usuario** | https://github.com/sotobotero/sotobotero-projects-docs/blob/master/ada/qa/docs/qa/e2e-happy-path-inventario-facturacion.md |
 
 ---

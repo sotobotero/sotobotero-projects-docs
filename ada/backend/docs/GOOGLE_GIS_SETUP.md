@@ -160,13 +160,15 @@ Back en "Credentials":
 5. Authorized JavaScript origins:
   ├─ http://localhost:4200
   ├─ http://localhost:4202
-  ├─ https://arcadia.sotobotero.com
-  └─ https://ada.sotobotero.com   (solo si ahí renderizas login con Google)
+  └─ https://ada.sotobotero.com   (host de negocio: ADA, Arcadia y Grafana; solo si ahí renderizas login con Google)
 
 6. Authorized redirect URIs:
   ├─ http://localhost:4200/auth/callback
   ├─ http://localhost:4202/auth/callback
-  └─ https://arcadia.sotobotero.com/auth/callback
+  └─ https://ada.sotobotero.com/auth/callback
+
+  Nota: el login con Google de Arcadia pasa por Keycloak (proveedor de identidad `google`, cuyo redirect es el del host
+  de SSO); estos orígenes solo aplican al botón de Google que ADA renderiza en su propio login.
 
   Nota: para GIS One Tap puro, los origins son lo crítico.
   Los redirect URIs aplican si usas code flow por redirect.
