@@ -425,6 +425,21 @@ Los permisos granulares los define cada negocio dentro de su propio espacio — 
 
 ---
 
+## Resolución de tenant en la zona pública
+
+Las aplicaciones de personal (ADA, Arcadia administrativo, Grafana) comparten un dominio con rutas (`sotobotero.com/ada`, `/grafana`, `/arcadia`) y el tenant sale de la **membresía** que elige el usuario tras entrar. La zona **pública** (reservas, marketplace) funciona distinto:
+
+- **El tenant se deduce solo del host de la petición**, nunca de la ruta ni de una cabecera o parámetro del cliente. Cada tenant tiene al menos un subdominio (`<operador>.sotobotero.com`) y puede añadir un dominio propio. Un mapeo `ada_master.tenant_domains(host, tenant_slug)` lo resuelve; un dominio propio es una fila más (más CNAME y certificado), sin cambios de código.
+- **La ruta identifica datos dentro del tenant, nunca el tenant.** En un marketplace compartido el operador compra un tenant y los profesionales (peluquero, manicurista, recepcionista) son **empleados de ese tenant** con sus servicios y disponibilidad. Se identifican por id, no por un slug público.
+- **Qué es público, en código:** solo lo que cuelga de `/restapi/v1/public/**` (paquete `api.rest.publicapi`). Todo lo demás de `/restapi` y `/graphql` exige token; lo nuevo nace privado, y un test recorre los endpoints registrados para garantizarlo. No se usa la tabla `view` (menú y permisos de usuarios) ni una tabla de rutas.
+- **Política del tenant:** `company_profile.public_booking_enabled`, falso por defecto (la plantilla `default_tenant` lo trae en falso). El aprovisionamiento del marketplace compartido lo activa con `--public-booking`.
+- **Qué se reutiliza:** el estado `BOOKEABLE`/`NO_BOOKEABLE` del servicio y su política de datos del cliente. `allow_anonymous_booking` significa "el cliente puede reservar sin dar datos de contacto", no "ruta abierta sin sesión".
+- **Desarrollo local:** `<tenant>.localhost` resuelve a 127.0.0.1 en los navegadores, sin DNS comodín.
+
+Ver `docs/user-histories/backlog/uh-public-booking-api-and-close-graphql.md` en el espacio de trabajo.
+
+---
+
 ## Modelo híbrido — marketplace + tenant propio
 
 ### Planes y modelo de aislamiento
