@@ -59,7 +59,7 @@ provision-tenant.sh (host)
   │
   └─ [3/3] docker exec patroni → provision-tenant-db.sh
                ├─ Crea DB (skip si ya existe — idempotente)
-               ├─ Clona desde default_tenant (skip si ya existe)
+               ├─ Clona desde la base indicada en $1 (skip si ya existe)
                ├─ Concede privilegios a appuser en todos los schemas
                ├─ Registra en ada_master.tenant_registry
                ├─ Upsert admin en ada_master.users (keycloak_id, login=NIT, SHA1)
@@ -109,7 +109,7 @@ destroy-tenant.sh (host)
 cd /home/ionosadmin/infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles
 
 bash provision-tenant.sh \
-  db:default_tenant public \
+  db:qa public \
   <NIT> \
   "Nombre Legal de la Empresa S.A.S" \
   info@empresa.co \
@@ -128,11 +128,11 @@ El NIT se puede ingresar normalizado o en formato colombiano estándar (`123.456
 
 | Posición | Nombre | Ejemplo | Descripción |
 |---|---|---|---|
-| `$1` | `source` | `db:default_tenant` | DB fuente a clonar, o ruta a un dump |
+| `$1` | `source` | `db:qa` | DB fuente a clonar (un tenant vivo con el esquema al día; en Ionos no hay `default_tenant`, se usa `qa`), o ruta a un dump. La clona con `pg_dump \| pg_restore` |
 | `$2` | `schemas` | `public` | Legacy; el script concede sobre todos los schemas igualmente |
 | `$3` | `nit` | `900987654-3` | NIT de la empresa; normalizado automáticamente |
 | `$4` | `company_name` | `"Academia Fitness S.A.S"` | Nombre legal (quoted si tiene espacios) |
-| `$5` | `email` | `info@empresa.co` | *(opcional)* Email admin; default `admin@<slug>.local` |
+| `$5` | `email` | `info@empresa.co` | *(opcional)* Email admin; default `admin@<slug>.local`. **Keycloak no admite emails repetidos** (`duplicateEmailsAllowed=false`): si ya lo usa otro usuario falla; un alias `usuario+algo@gmail.com` llega al mismo buzón y vale |
 | `--clean-data` | *(flag)* | `--clean-data` | Limpia datos de negocio del clone; mantiene solo catálogos e id=1 |
 | `--country=XX` | *(flag)* | `--country=CO` | Trunca `public.nomenclature` y la resembra con el seed del país indicado (código ISO). Actualiza además `company_profile.country`. Sin este flag se conserva la nomenclatura clonada. Disponible: `CO` (Colombia), `ES` (España). |
 | `--public-booking=<host>` | *(flag)* | `--public-booking=reservas.ejemplo.com` | Abre la reserva anónima del tenant en ese host: inserta `ada_master.tenant_domains` y pone `company_profile.public_booking_enabled = true`. Sin el flag el tenant no expone nada público. El host debe llegar a ADA por un `server` de nginx. Ver [API pública](PUBLIC_API_AND_ACCESS_CONTROL.md). |
@@ -145,6 +145,18 @@ El NIT se puede ingresar normalizado o en formato colombiano estándar (`123.456
 El script es re-ejecutable sin DROP previo. Si la DB ya existe, salta el CREATE y el clone y solo actualiza registry, users, memberships, user_system y company_profile.
 
 ---
+
+## Operador público compartido (ejemplo real, 2026-10-21)
+
+Tenant de pruebas que atiende la reserva anónima del host `arcadia.sotobotero.com`:
+
+```bash
+bash provision-tenant.sh db:qa public 9850777 "Sotobotero Marketplace" \
+  sotobotero+marketplace@gmail.com --clean-data --country=CO --public-booking=arcadia.sotobotero.com
+```
+
+Slug `so9850777`. `tenant_domains.host` es clave primaria: antes de asociar un host a otro tenant hay que borrar su fila
+(`DELETE FROM ada_master.tenant_domains WHERE host = '...'`), si no el provisioning falla.
 
 ## Destroy
 
@@ -287,7 +299,7 @@ Tabla lista para entregar tras cada provisioning. Reemplazar los campos entre `<
 
 ```bash
 bash provision-tenant.sh \
-  db:default_tenant public \
+  db:qa public \
   '900987654-3' \
   'Academia Fitness Demo S.A.S' \
   'admin@academiafitness.co' \
