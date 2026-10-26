@@ -67,7 +67,9 @@ provision-tenant.sh (host)
                ├─ (opcional --clean-data) Limpia datos de negocio
                ├─ INSERT person + user_system (NIT admin, copiado de root id=1)
                ├─ UPDATE company_profile (name, NIT, email; limpia campos del clone)
+               ├─ (con --clean-data) borra los períodos contables del origen y crea los del año en curso
                ├─ (opcional --country=XX) Trunca nomenclature, resembra geografía del país
+               │    y reemplaza plan de cuentas e impuestos por los del país (accounting/XX.sql)
                │    y actualiza company_profile.country al país indicado
                └─ (opcional --seed-consumidor-final) Inserta Consumidor Final DIAN 222222222222
                     con geografía resuelta automáticamente si --country=CO fue especificado
@@ -134,7 +136,7 @@ El NIT se puede ingresar normalizado o en formato colombiano estándar (`123.456
 | `$4` | `company_name` | `"Academia Fitness S.A.S"` | Nombre legal (quoted si tiene espacios) |
 | `$5` | `email` | `info@empresa.co` | *(opcional)* Email admin; default `admin@<slug>.local`. **Keycloak no admite emails repetidos** (`duplicateEmailsAllowed=false`): si ya lo usa otro usuario falla; un alias `usuario+algo@gmail.com` llega al mismo buzón y vale |
 | `--clean-data` | *(flag)* | `--clean-data` | Limpia datos de negocio del clone; mantiene solo catálogos e id=1 |
-| `--country=XX` | *(flag)* | `--country=CO` | Trunca `public.nomenclature` y la resembra con el seed del país indicado (código ISO). Actualiza además `company_profile.country`. Sin este flag se conserva la nomenclatura clonada. Disponible: `CO` (Colombia), `ES` (España). |
+| `--country=XX` | *(flag)* | `--country=CO` | Trunca `public.nomenclature` y la resembra con el seed del país indicado (código ISO). Actualiza además `company_profile.country`. Aplica además el plan de cuentas y los impuestos del primer país (`dbfiles/accounting/<ISO>-<PLAN>.sql`; ver más abajo). Sin este flag se conserva todo lo clonado. Disponible: `CO` (Colombia: nomenclatura DIVIPOLA, PUC e IVA colombiano) y `ES` (España: nomenclatura, PGC e IVA español). Un país sin archivo conserva lo del tenant de origen. |
 | `--public-booking=<host>` | *(flag)* | `--public-booking=reservas.ejemplo.com` | Abre la reserva anónima del tenant en ese host: inserta `ada_master.tenant_domains` y pone `company_profile.public_booking_enabled = true`. Sin el flag el tenant no expone nada público. El host debe llegar a ADA por un `server` de nginx. Ver [API pública](PUBLIC_API_AND_ACCESS_CONTROL.md). |
 | `--max-users=N` | *(flag)* | `--max-users=5` | Licencia: usuarios nominales permitidos (no cuentan `root` ni el rol `client`). Por defecto 3. |
 | `--access-months=N` | *(flag)* | `--access-months=12` | Licencia: meses de acceso desde hoy (`access_until`). Por defecto 12. |
@@ -231,6 +233,17 @@ Con `--clean-data`, el orden es: clone → clean → insert NIT admin → update
 | 2 | `<NIT>` | insertado por el script — role/status copiados de root (id=1) |
 
 > **Regla crítica:** `ada_master.users.login = NIT` debe coincidir con `user_system.login = NIT` para que `LoginBean` resuelva la sesión correctamente.
+
+### Períodos contables, plan de cuentas e impuestos en la DB de negocio
+
+| Qué | Cuándo | Resultado |
+|---|---|---|
+| Períodos | `--clean-data` | Borra los del tenant de origen y crea los del **año en que se provisiona** (`AAAA00` inicial, `AAAA01`-`AAAA12`, `AAAA13` cierre anual), abiertos. Los del año siguiente hay que crearlos antes de enero: sin un período abierto ADA deja las ventas y compras como pendientes de contabilizar |
+| Plan de cuentas | `--country=CO` / `ES` | `accounting/CO-PUC.sql`: PUC colombiano (Decreto 2650 de 1993), 2.520 cuentas, 66 activas (base de comercio). `accounting/ES-PGC.sql`: el PGC español tal como lo tiene la plantilla QA (919 cuentas). Ambos reemplazan el plan del origen y repuntan las columnas que referencian el catálogo (medios de pago, bancos, tipos de inventario, impuestos, separados). Una transacción; se niegan si el tenant ya tiene asientos |
+| Impuestos | `--country=CO` / `ES` | CO: IVA generado 19% y 5% (ventas, `240805`) e IVA descontable 19% y 5% (compras, `240810`). ES: IVA repercutido 10/21, soportado 10/21 y recargo de equivalencia |
+| Geografía | `--country=CO` / `ES` | `nomenclature/CO.sql` (33 departamentos, 1.122 municipios) o `ES.sql` (52 provincias, 140 comarcas, 8.198 municipios; sacada de la base de QA, donde vivía) |
+
+Cada país es un archivo `accounting/<ISO>-<PLAN>.sql`; sin archivo se conserva el plan clonado. Por validar con el contador de cada cliente: subcuentas de IVA, compras como `620505` (inventario periódico) y la línea de ventas `413524`.
 
 ### company_profile en la DB de negocio
 
