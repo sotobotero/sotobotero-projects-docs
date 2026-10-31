@@ -150,11 +150,11 @@ El script es re-ejecutable sin DROP previo. Si la DB ya existe, salta el CREATE 
 
 ## Operador público compartido (ejemplo real, 2026-10-21)
 
-Tenant de pruebas que atiende la reserva anónima del host `toki.sotobotero.com` (marketplace compartido; hasta el 2026-10-27 fue `arcadia.sotobotero.com`, que hoy redirige a `toki`):
+Tenant de pruebas que atiende la reserva anónima del host `stg-toki.sotobotero.com` (marketplace compartido en staging; `toki.sotobotero.com` queda reservado para producción; hasta el 2026-10-27 fue `arcadia.sotobotero.com`):
 
 ```bash
 bash provision-tenant.sh db:qa public 9850777 "Sotobotero Marketplace" \
-  sotobotero+marketplace@gmail.com --clean-data --country=CO --public-booking=toki.sotobotero.com
+  sotobotero+marketplace@gmail.com --clean-data --country=CO --public-booking=stg-toki.sotobotero.com
 ```
 
 Slug `so9850777`. `tenant_domains.host` es clave primaria: antes de asociar un host a otro tenant hay que borrar su fila
