@@ -12,6 +12,9 @@
 
 Todos en: `infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles/`
 
+> El repositorio se llama `infraestructure-as-code` (así está en GitHub y así está en Ionos). En la máquina local el
+> clon vive en una carpeta llamada `infraestructure-ascode`: es el mismo repo, solo cambia el nombre de la carpeta.
+
 **Credenciales requeridas del operador: ninguna.** La password de Keycloak se lee directamente del Docker secret montado en el contenedor Keycloak (`/run/secrets/keycloak-admin-password-staging`) mediante `docker exec cat`. Solo se necesita acceso a Docker.
 
 ---
@@ -32,7 +35,7 @@ ADA_KEYCLOAK_LOGIN_ENABLED=true   # ADA autentica vía Keycloak ROPC
 
 **Uso:**
 ```bash
-cd infraestructure-ascode/docker-compose/postgres/db/dbfiles/otherfiles
+cd infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles
 
 bash provision-tenant-local.sh \
   db:default_tenant public \
@@ -188,16 +191,16 @@ Type the tenant slug to confirm destruction: _
 
 El provisioning no siembra "datos de negocio": limpia el clon y le pone lo que el tenant necesita para operar en su país.
 Estos archivos **no son migraciones** y no viven todos en este repo: los que el script copia al contenedor están en
-`infraestructure-ascode/docker-compose/postgres/db/dbfiles/`.
+`infraestructure-as-code/docker-compose/postgres/db/dbfiles/` (abreviado `dbfiles/` en la tabla).
 
 | Pieza | Qué es | Depende del país | Quién la usa | Dónde vive |
 |---|---|---|---|---|
-| `otherfiles/clean-tenant-data.sql` | Borra los datos de negocio del clon y deja catálogos e `id=1` | No | provision, con `--clean-data` | infra |
-| `nomenclature/generic.sql` | Tipos de vía y países: la base sobre la que se apoya cualquier geografía | No | provision, con `--country` | infra |
-| `nomenclature/CO.sql` | Geografía DIVIPOLA (Colombia) | Sí, `CO` | provision, `--country=CO` | infra |
-| `nomenclature/ES.sql` | Geografía de España | Sí, `ES` | provision, `--country=ES` | infra |
-| `accounting/CO-PUC.sql` | Plan Único de Cuentas e impuestos colombianos; reemplaza el plan clonado en una transacción y **se niega si el tenant ya tiene movimientos contables** | Sí, `CO` | provision, con `--country` (primer país) | infra |
-| `accounting/ES-PGC.sql` | Plan General Contable e impuestos españoles, misma regla | Sí, `ES` | provision, idem | infra |
+| `dbfiles/otherfiles/clean-tenant-data.sql` | Borra los datos de negocio del clon y deja catálogos e `id=1` | No | provision, con `--clean-data` | infra |
+| `dbfiles/nomenclature/generic.sql` | Tipos de vía y países: la base sobre la que se apoya cualquier geografía | No | provision, con `--country` | infra |
+| `dbfiles/nomenclature/CO.sql` | Geografía DIVIPOLA (Colombia) | Sí, `CO` | provision, `--country=CO` | infra |
+| `dbfiles/nomenclature/ES.sql` | Geografía de España | Sí, `ES` | provision, `--country=ES` | infra |
+| `dbfiles/accounting/CO-PUC.sql` | Plan Único de Cuentas colombiano (2.520 cuentas, 66 activas), impuestos y métodos de pago; reemplaza el plan clonado en una transacción y **se niega si el tenant ya tiene movimientos contables** | Sí, `CO` | provision, con `--country` (primer país) | infra |
+| `dbfiles/accounting/ES-PGC.sql` | Plan General Contable español (919 cuentas, 20 activas), impuestos y métodos de pago; misma regla | Sí, `ES` | provision, idem | infra |
 | Consumidor Final DIAN (NIT 222222222222) | Cliente obligatorio para facturar electrónicamente en Colombia; la geografía se resuelve sola desde la nomenclatura | Sí, `CO` | provision, con `--seed-consumidor-final`; es **SQL dentro de `provision-tenant-db.sh`**, idempotente por documento | infra (script) |
 | `db/seed/provisioning/provider-plans-default.sql` | Planes de proveedora para un marketplace que no nació de una solicitud | No, pero solo aplica a un marketplace | a mano (`psql -d ada_master -v tenant=<slug>`) | este repo |
 | `db/seed/demo/*.sql` | Escenarios de prueba (lotes, métodos de pago) | No | a mano en una base de pruebas | este repo |
