@@ -332,6 +332,72 @@ El agente de impresión es un proceso local que corre en el PC donde están cone
 
 ---
 
+## Roles: quién puede qué
+
+Cuatro capas, de fuera hacia adentro. Ninguna sustituye a otra: cada decisión se toma en la capa de su alcance.
+
+> **Estado (2026-11-03):** la tabla de roles es la del modelo objetivo y ya está en las bases (`hosts.zona`, `memberships.zona`,
+> `user_auth_identity` — migración 192). Lo que todavía no lo lee es el código: `auth-options` sigue resolviendo el realm desde
+> `tenant_registry.auth_realm` y la zona de la membresía aún no se comprueba (hoy basta membresía activa + permiso). Eso entra en
+> el paso 3 del cambio de zonas; hasta entonces, las dos filas marcadas "zona staff" se comportan como "membresía activa".
+
+| Capa | Dónde vive | Qué decide |
+|---|---|---|
+| **Realm** (Keycloak) | los dos realms: **staff** y **abierto** del marketplace | quién puede autenticarse en cada puerta. Sale de la **zona del host** (`ada_master.hosts.zona`), nunca de un valor por host |
+| **Plataforma** | `ada_master.users.platform_operator` | aprobar el **alta de un tenant completo** (onboarding) |
+| **Membresía** | `ada_master.memberships (tenant_slug, role, zona)` | a qué tenants entra una persona, **por qué puerta** y con qué rol del tenant |
+| **Rol + permisos del tenant** | `<base del tenant>.role` (con `bypass`), `permission`, `role_permision`, `user_permission_grant` | qué pantallas y operaciones dentro de ese tenant |
+
+⚠️ El `role` de la **membresía** no autoriza por sí mismo: describe la puerta y el origen. La autorización dentro del tenant es
+el rol de **su** base de datos.
+
+### Roles de membresía (`ada_master.memberships.role`)
+
+| `role` | `zona` | Quién es | Qué le permite |
+|---|---|---|---|
+| `owner` | `staff` | la dueña del negocio | entrar al tenant como su administrador (con el rol que tenga en la base del tenant) |
+| `staff` | `staff` | equipo de plataforma / soporte | operar; aprobar altas solo si además tiene `platform_operator` |
+| `provider` | `public` | proveedora del marketplace | entrar por el host público con su cuenta del realm abierto |
+| `client` | `public` | cliente del marketplace | entrar por el host público con su cuenta del realm abierto |
+
+La fila de `platform_operator` **no** es una membresía: vive en `users` y solo aplica al onboarding de tenants completos.
+
+### Roles del tenant (semilla de la base de negocio)
+
+| Rol | `bypass` | Permisos | Zona | Qué abre |
+|---|---|---|---|---|
+| `root` | **sí** | 67 | staff | todo: el permiso se salta las comprobaciones (plataforma/desarrollo) |
+| `Administrador del sistema` | no | 67 | staff | todo el catálogo del tenant: es el administrador del negocio |
+| `CONTABILIDAD` | no | 45 | staff | contabilidad y documentos contables |
+| `PRODUCCIÓN` | no | 45 | staff | operación de inventario y productos |
+| `VENTAS` | no | 5 | staff | facturación y ventas |
+| `Cajero` | no | 4 | staff | caja |
+| `COMERCIAL` | no | 3 | staff | clientes y contratos |
+| `usuario basico` | no | 1 | staff | mínimo (cambio de contraseña) |
+| `marketplace_provider` | no | 2 | public | portal de proveedora: sus servicios, su agenda, sus fotos |
+| `marketplace_client` | no | 1 | public | cambio de contraseña; el resto de vistas son públicas |
+
+Los permisos por módulo (inventario, facturación, contabilidad, agenda, verticales) y a qué rol se conceden están en
+[`db/seed/provisioning/modules/`](../db/seed/provisioning/README.md): encender un módulo es conceder sus permisos al rol.
+
+### Operaciones sensibles: qué exige cada una
+
+| Operación | Requiere |
+|---|---|
+| **Aprobar el alta de un tenant completo** | token del realm staff + `users.platform_operator` en `ada_master` + membresía staff activa en el tenant desde el que opera + `PLATFORM_MEMBERSHIPS_MANAGE` en la base de ese tenant |
+| **Aprobar solicitudes de marketplace** (activar/suspender/cambiar plan/mover una prestadora) | token del realm staff + membresía staff activa **en ese tenant** + el permiso en **su** base. No mira `platform_operator` |
+| **Ver el catálogo público, reservar, alta de proveedora** | host de zona `public`; son endpoints anónimos y el host fija el tenant (nadie elige tenant sin sesión) |
+| **Administrar el propio negocio** | membresía `staff` en su tenant + el rol de esa base |
+
+### Cómo se conceden
+
+| Qué | Cómo |
+|---|---|
+| `platform_operator` | `psql -d ada_master -v login=<login> -f db/seed/provisioning/platform-operator.sql` |
+| Host y zona de un tenant | `psql -d ada_master -v host=<host> -v zona=<staff|public> [-v tenant=<slug>] -f db/seed/provisioning/hosts.sql`; el provisioning lo hace con `--public-booking=<host>` (zona public) |
+| Membresía (tenant + puerta + rol) | la crea el provisioning (owner/staff); el alta pública crea `provider`/`client` con zona `public` |
+| Rol del tenant y sus permisos | provisioning inserta el `user_system` con su rol; los permisos por módulo, con los seeds de `modules/` |
+
 ## Iniciar sesión
 
 | Campo | Valor |
