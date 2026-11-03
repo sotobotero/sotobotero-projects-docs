@@ -145,6 +145,23 @@ El NIT se puede ingresar normalizado o en formato colombiano estándar (`123.456
 | `--access-months=N` | *(flag)* | `--access-months=12` | Licencia: meses de acceso desde hoy (`access_until`). Por defecto 12. |
 | `--seed-consumidor-final` | *(flag)* | `--seed-consumidor-final` | Inserta el cliente "Consumidor Final" (NIT DIAN 222222222222) requerido para facturación electrónica colombiana (Resolución 000042/2020). La geografía (Colombia/Bogotá D.C.) se resuelve automáticamente si `--country=CO` fue especificado. Idempotente — no falla si ya existe. |
 
+### Activar el marketplace a un tenant que ya existe
+
+Los seeds están en `db/seed/provisioning/marketplace/` y son idempotentes. En orden:
+
+```bash
+# 1. roles y permisos que abren el portal de proveedora y la plataforma
+psql -d <bd del tenant> -v ON_ERROR_STOP=1 -f db/seed/provisioning/marketplace/permissions.sql
+# 2. sectores y categorías del catálogo público
+psql -d <bd del tenant> -v ON_ERROR_STOP=1 -f db/seed/provisioning/marketplace/sectors.sql
+# 3. planes de proveedora (solo si el tenant no nació de una solicitud)
+psql -d ada_master -v tenant=<slug> -f db/seed/provisioning/provider-plans-default.sql
+# 4. opcional: campaña de bienvenida de referidos
+psql -d <bd del tenant> -v ON_ERROR_STOP=1 -f db/seed/provisioning/referrals/campaign.sql
+```
+
+Qué abre cada permiso y qué se siembra en cada tipo de tenant: [`db/seed/provisioning/README.md`](../db/seed/provisioning/README.md).
+
 ### Idempotencia
 
 El script es re-ejecutable sin DROP previo. Si la DB ya existe, salta el CREATE y el clone y solo actualiza registry, users, memberships, user_system y company_profile.
