@@ -22,9 +22,9 @@ Un generador de datos repetible, con dos modos, que sirva a tres consumidores: v
 ## Ubicación de los entregables (repo ADA_ENTERPISE_CORE)
 
 ```
-db/seed/demo-lotes.sql            # modo escenario (correctitud) — idempotente
-db/seed/demo-lotes-volumen.sql    # modo volumen (generate_series, parametrizado)
-db/seed/clean-demo-lotes.sql      # borra todo lo marcado DEMO-
+db/seed/demo/demo-lotes.sql            # modo escenario (correctitud) — idempotente
+db/seed/demo/demo-lotes-volumen.sql    # modo volumen (generate_series, parametrizado)
+db/seed/demo/clean-demo-lotes.sql      # borra todo lo marcado DEMO-
 tests/playwright/specs/lotes-trazabilidad.spec.ts   # E2E de humo
 tests/performance/                # (fase 3, opcional) k6 contra el API
 ```

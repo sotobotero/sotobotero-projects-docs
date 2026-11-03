@@ -18,7 +18,7 @@ bash provision-tenant-local.sh db:qa public <NIT> "Demo Lotes" <email>
 
 ```bash
 export PGPASSWORD=<password-postgres-local>
-psql -h localhost -U <usuario> -d <slug> -v ON_ERROR_STOP=1 -f db/seed/demo-lotes.sql
+psql -h localhost -U <usuario> -d <slug> -v ON_ERROR_STOP=1 -f db/seed/demo/demo-lotes.sql
 ```
 
 Idempotente: si ya hay productos `DEMO-%` no hace nada. Crea 27 productos de droguería, condimentos e insumos y embutidos, repartidos en 3 líneas y 8 grupos, con 6 proveedores, 10 clientes (con su cuenta de facturación), 28 compras (ALBE) y 22 ventas (ALBS); fechas relativas a `CURRENT_DATE`. El kardex y el stock los llenan los triggers.
@@ -26,7 +26,7 @@ Idempotente: si ya hay productos `DEMO-%` no hace nada. Crea 27 productos de dro
 ## 3. Limpiar / resembrar
 
 ```bash
-psql -h localhost -U <usuario> -d <slug> -v ON_ERROR_STOP=1 -f db/seed/clean-demo-lotes.sql
+psql -h localhost -U <usuario> -d <slug> -v ON_ERROR_STOP=1 -f db/seed/demo/clean-demo-lotes.sql
 ```
 
 Borra todo lo marcado (productos `DEMO-*`, facturas `DEMO-*`, terceros con `internal_code='DEMO'`, sus cuentas, y las líneas/grupos creados) y deja la base como el clon de `qa`. Luego se puede volver a correr el paso 2.
