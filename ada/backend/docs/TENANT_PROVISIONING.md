@@ -336,10 +336,9 @@ El agente de impresión es un proceso local que corre en el PC donde están cone
 
 Cuatro capas, de fuera hacia adentro. Ninguna sustituye a otra: cada decisión se toma en la capa de su alcance.
 
-> **Estado (2026-11-03):** la tabla de roles es la del modelo objetivo y ya está en las bases (`hosts.zona`, `memberships.zona`,
-> `user_auth_identity` — migración 192). Lo que todavía no lo lee es el código: `auth-options` sigue resolviendo el realm desde
-> `tenant_registry.auth_realm` y la zona de la membresía aún no se comprueba (hoy basta membresía activa + permiso). Eso entra en
-> el paso 3 del cambio de zonas; hasta entonces, las dos filas marcadas "zona staff" se comportan como "membresía activa".
+> **Estado (2026-11-03):** `hosts.zona`, `memberships.zona` y `user_auth_identity` existen en local y staging (migración 192) y
+> `auth-options` ya resuelve el realm por zona en staging. `myWorkspace` (las dos autoridades de abajo) está probado en local y
+> **pendiente de despliegue**; hasta que entre, el menú se decide con el permiso solo.
 
 | Capa | Dónde vive | Qué decide |
 |---|---|---|
@@ -380,16 +379,50 @@ La fila de `platform_operator` **no** es una membresía: vive en `users` y solo 
 Los permisos por módulo (inventario, facturación, contabilidad, agenda, verticales) y a qué rol se conceden están en
 [`db/seed/provisioning/modules/`](../db/seed/provisioning/README.md): encender un módulo es conceder sus permisos al rol.
 
-### Operaciones sensibles: qué exige cada una
+### Autoridades: las tres formas de mandar
 
-| Operación | Requiere |
-|---|---|
-| **Aprobar el alta de un tenant completo** | token del realm staff + `users.platform_operator` en `ada_master` + membresía staff activa en el tenant desde el que opera + `PLATFORM_MEMBERSHIPS_MANAGE` en la base de ese tenant |
-| **Aprobar solicitudes de marketplace** (activar/suspender/cambiar plan/mover una prestadora) | token del realm staff + membresía staff activa **en ese tenant** + el permiso en **su** base. No mira `platform_operator` |
-| **Ver el catálogo público, reservar, alta de proveedora** | host de zona `public`; son endpoints anónimos y el host fija el tenant (nadie elige tenant sin sesión) |
-| **Administrar el propio negocio** | membresía `staff` en su tenant + el rol de esa base |
+Son **datos**, no código. Se conceden y se quitan con filas, y ninguna concede las otras dos.
 
-### Cómo se conceden
+| Autoridad | Dónde vive | Alcance | Qué permite | Qué **no** permite |
+|---|---|---|---|---|
+| **Operador de plataforma** | `ada_master.users.platform_operator = true` | **todos** los tenants | aprobar/rechazar el **alta de un tenant completo** (onboarding) y marcarla aprovisionada; es la única que puede, porque el tenant aún no existe cuando se aprueba | **no** da administración de marketplace de ningún tenant: eso exige membresía y permiso **en cada uno** |
+| **Administrador de tenant** | membresía **staff activa** en ese tenant + `PLATFORM_MEMBERSHIPS_MANAGE` en **su** base | **un** tenant | ver y gestionar las **solicitudes de marketplace** de ese tenant: activar, suspender, cambiar plan, autorizar perfil, decidir el dueño de la comisión | no toca altas de tenants completos, ni tenants donde no tenga membresía |
+| **Operador sobre varios tenants** (mover prestadoras) | la misma que la anterior, **en origen y destino** | **dos** tenants | mover una membresía de proveedora entre dos tenants donde es administrador; `moveTargets` solo lista esos | no mueve hacia tenants donde no es administrador |
+
+`myWorkspace` expone las dos primeras como **`platformOperator`** y **`tenantAdmin`**, así que el menú y las pestañas de la
+administración se deciden con estos datos y no con el permiso suelto. La tercera no se expone: la decide el backend en cada
+operación (`canOperateIn`).
+
+**Quién ve qué, sin nombrar a nadie** (es el flag, no una persona):
+
+| Quien tenga… | "Administración" | "Solicitudes de tenant" | "Miembros de marketplace" |
+|---|---|---|---|
+| `platform_operator = true` | sí, **en cualquier tenant** | sí, **siempre** (el alta no pertenece a ningún tenant) | solo en los tenants donde además tenga **membresía staff** (y el tenant tenga marketplace) |
+| membresía staff + permiso en el tenant (sin el flag) | sí, en **ese** tenant | no | sí, en **ese** tenant, si tiene marketplace |
+| las dos cosas | sí | sí | sí, en los tenants donde tenga la membresía |
+
+Un tenant sin marketplace no ofrece "Miembros de marketplace" a nadie: no hay nada que administrar ahí.
+
+**Propiedades que se desprenden de la tabla** (el backend ya las aplica):
+
+- Dar `platform_operator` **no** convierte a nadie en administrador de todos los negocios: para marketplace sigue necesitando
+  membresía + permiso en cada tenant.
+- Un administrador de tenant **no** aprueba altas de tenants, aunque tenga el permiso en su base.
+- Todo cambio queda en `platform_audit` con actor (onboarding y membresías), así que el uso del flag ultra-elevado tiene rastro.
+
+### Cambiar de una autoridad a otra (siempre datos, sin tocar código)
+
+| De → a | Qué se hace | Riesgo |
+|---|---|---|
+| Operador de plataforma → administrador de **algunos** tenants | `users.platform_operator = false` y dejar/crear la **membresía staff** + permiso solo en esos tenants | bajo; deja de poder aprobar altas |
+| Administrador de algunos → operador de plataforma | `users.platform_operator = true` (las membresías se quedan como están) | alto: pasa a poder aprobar altas de cualquier tenant |
+| Todo → nada | quitar `platform_operator` y la membresía staff del tenant (o bajarle el permiso al rol) | bajo |
+| Añadir un tenant a su alcance | crear la fila de `memberships` con `zona='staff'` en ese tenant (el permiso lo lleva el rol de su base) | bajo |
+
+> El provisioning ya crea la membresía staff de `root` en cada tenant nuevo, así que root administra el marketplace de todos
+> sin que nadie tenga que acordarse.
+
+### Cómo se conceden### Cómo se conceden
 
 | Qué | Cómo |
 |---|---|
