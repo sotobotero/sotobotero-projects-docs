@@ -151,7 +151,7 @@ Los seeds están en `db/seed/provisioning/marketplace/` y son idempotentes. En o
 
 ```bash
 # 1. roles y permisos que abren el portal de proveedora y la plataforma
-psql -d <bd del tenant> -v ON_ERROR_STOP=1 -f db/seed/provisioning/marketplace/permissions.sql
+psql -d <bd del tenant> -v ON_ERROR_STOP=1 -f db/seed/provisioning/modules/marketplace.sql
 # 2. sectores y categorías del catálogo público
 psql -d <bd del tenant> -v ON_ERROR_STOP=1 -f db/seed/provisioning/marketplace/sectors.sql
 # 3. planes de proveedora (solo si el tenant no nació de una solicitud)
