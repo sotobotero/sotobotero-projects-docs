@@ -140,7 +140,7 @@ El NIT se puede ingresar normalizado o en formato colombiano estándar (`123.456
 | `$5` | `email` | `info@empresa.co` | *(opcional)* Email admin; default `admin@<slug>.local`. **Keycloak no admite emails repetidos** (`duplicateEmailsAllowed=false`): si ya lo usa otro usuario falla; un alias `usuario+algo@gmail.com` llega al mismo buzón y vale |
 | `--clean-data` | *(flag)* | `--clean-data` | Limpia datos de negocio del clone; mantiene solo catálogos e id=1 |
 | `--country=XX` | *(flag)* | `--country=CO` | Trunca `public.nomenclature` y la resembra con el seed del país indicado (código ISO). Actualiza además `company_profile.country`. Aplica además el plan de cuentas y los impuestos del primer país (`dbfiles/accounting/<ISO>-<PLAN>.sql`; ver más abajo). Sin este flag se conserva todo lo clonado. Disponible: `CO` (Colombia: nomenclatura DIVIPOLA, PUC e IVA colombiano) y `ES` (España: nomenclatura, PGC e IVA español). Un país sin archivo conserva lo del tenant de origen. |
-| `--public-booking=<host>` | *(flag)* | `--public-booking=reservas.ejemplo.com` | Abre la reserva anónima del tenant en ese host: inserta `ada_master.tenant_domains` y pone `company_profile.public_booking_enabled = true`. Sin el flag el tenant no expone nada público. El host debe llegar a ADA por un `server` de nginx. Ver [API pública](PUBLIC_API_AND_ACCESS_CONTROL.md). |
+| `--public-booking=<host>` | *(flag)* | `--public-booking=reservas.ejemplo.com` | Abre la reserva anónima del tenant en ese host: inserta la fila en `ada_master.hosts` (zona pública) y pone `company_profile.public_booking_enabled = true`. Sin el flag el tenant no expone nada público. El host debe llegar a ADA por un `server` de nginx. Ver [API pública](PUBLIC_API_AND_ACCESS_CONTROL.md). |
 | `--max-users=N` | *(flag)* | `--max-users=5` | Licencia: usuarios nominales permitidos (no cuentan `root` ni el rol `client`). Por defecto 3. |
 | `--access-months=N` | *(flag)* | `--access-months=12` | Licencia: meses de acceso desde hoy (`access_until`). Por defecto 12. |
 | `--seed-consumidor-final` | *(flag)* | `--seed-consumidor-final` | Inserta el cliente "Consumidor Final" (NIT DIAN 222222222222) requerido para facturación electrónica colombiana (Resolución 000042/2020). La geografía (Colombia/Bogotá D.C.) se resuelve automáticamente si `--country=CO` fue especificado. Idempotente — no falla si ya existe. |
@@ -177,8 +177,8 @@ bash provision-tenant.sh db:qa public 9850777 "Sotobotero Marketplace" \
   sotobotero+marketplace@gmail.com --clean-data --country=CO --public-booking=stg-toki.sotobotero.com
 ```
 
-Slug `so9850777`. `tenant_domains.host` es clave primaria: antes de asociar un host a otro tenant hay que borrar su fila
-(`DELETE FROM ada_master.tenant_domains WHERE host = '...'`), si no el provisioning falla.
+Slug `so9850777`. `hosts.host` es clave primaria: antes de asociar un host a otro tenant hay que cambiar o borrar su fila
+(`UPDATE ada_master.hosts SET tenant_slug = '<otro>' WHERE host = '...'`); la zona la decide el host, no el tenant.
 
 ## Destroy
 
@@ -228,7 +228,7 @@ En Ionos: clonar ADA junto al repo de infraestructura (o subir `db/seed/provisio
 | `db/seed/provisioning/accounting/ES-PGC.sql` | Plan General Contable español (919 cuentas, 20 activas), impuestos y métodos de pago; misma regla | Sí, `ES` | provision, idem | este repo |
 | Consumidor Final DIAN (NIT 222222222222) | Cliente obligatorio para facturar electrónicamente en Colombia; la geografía se resuelve sola desde la nomenclatura | Sí, `CO` | provision, con `--seed-consumidor-final`; es **SQL dentro de `provision-tenant-db.sh`** (infra), idempotente por documento | infra (script) |
 | `db/seed/provisioning/hosts.sql` | Declara un host y su zona (staff o public); es el registro completo desde la 192: sin fila el host no existe para la app | No | a mano por entorno, y provisioning al crear el host | este repo |
-| `db/seed/provisioning/tenant-domain.sql` | Registra el host del tenant en `ada_master.tenant_domains` (sin él no hay zona pública: catálogo, reservas, alta de proveedora) | No | a mano (`psql -d ada_master -v tenant=<slug> -v host=<host>`); el provisioning lo hace con `--public-booking=<host>` | este repo |
+| `db/seed/provisioning/hosts.sql` | Registra el host del tenant en `ada_master.hosts` con su zona (sin fila no hay zona pública: catálogo, reservas, alta de proveedora) | No | a mano (`psql -d ada_master -v host=<host> -v zona=public -v tenant=<slug>`) o con `--public-booking=<host>` | este repo |
 | `db/seed/provisioning/platform-operator.sql` | Marca en `ada_master.users` quién es operador de plataforma (segunda llave del admin de plataforma, junto al permiso del tenant) | No | a mano (`psql -d ada_master -v login=<login>`) | este repo |
 | `db/seed/provisioning/provider-plans-default.sql` | Planes de proveedora para un marketplace que no nació de una solicitud | No, pero solo aplica a un marketplace | a mano (`psql -d ada_master -v tenant=<slug>`) | este repo |
 | `db/seed/demo/*.sql` | Escenarios de prueba (lotes, métodos de pago) | No | a mano en una base de pruebas | este repo |
