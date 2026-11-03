@@ -184,6 +184,36 @@ Type the tenant slug to confirm destruction: _
 
 ---
 
+## Siembra del provisioning: qué hay, de qué país y quién lo usa
+
+El provisioning no siembra "datos de negocio": limpia el clon y le pone lo que el tenant necesita para operar en su país.
+Estos archivos **no son migraciones** y no viven todos en este repo: los que el script copia al contenedor están en
+`infraestructure-ascode/docker-compose/postgres/db/dbfiles/`.
+
+| Pieza | Qué es | Depende del país | Quién la usa | Dónde vive |
+|---|---|---|---|---|
+| `otherfiles/clean-tenant-data.sql` | Borra los datos de negocio del clon y deja catálogos e `id=1` | No | provision, con `--clean-data` | infra |
+| `nomenclature/generic.sql` | Tipos de vía y países: la base sobre la que se apoya cualquier geografía | No | provision, con `--country` | infra |
+| `nomenclature/CO.sql` | Geografía DIVIPOLA (Colombia) | Sí, `CO` | provision, `--country=CO` | infra |
+| `nomenclature/ES.sql` | Geografía de España | Sí, `ES` | provision, `--country=ES` | infra |
+| `accounting/CO-PUC.sql` | Plan Único de Cuentas e impuestos colombianos; reemplaza el plan clonado en una transacción y **se niega si el tenant ya tiene movimientos contables** | Sí, `CO` | provision, con `--country` (primer país) | infra |
+| `accounting/ES-PGC.sql` | Plan General Contable e impuestos españoles, misma regla | Sí, `ES` | provision, idem | infra |
+| Consumidor Final DIAN (NIT 222222222222) | Cliente obligatorio para facturar electrónicamente en Colombia; la geografía se resuelve sola si hay `--country=CO` | Sí, `CO` | provision, con `--seed-consumidor-final` | migración `088` (aplicada) + flag |
+| `db/seed/provisioning/provider-plans-default.sql` | Planes de proveedora para un marketplace que no nació de una solicitud | No, pero solo aplica a un marketplace | a mano (`psql -d ada_master -v tenant=<slug>`) | este repo |
+| `db/seed/country/co/puc-replace-PGC.sql` | Conversión de un tenant **existente** del PGC español al PUC colombiano, remapeando todo lo que apunta al plan | Sí, `CO` | a mano, una vez por tenant | este repo |
+| `db/seed/demo/*.sql` | Escenarios de prueba (lotes, métodos de pago) | No | a mano en una base de pruebas | este repo |
+
+Reglas que se desprenden de ahí:
+
+- **País = datos, no esquema.** Añadir un país es añadir dos archivos (`nomenclature/<ISO>.sql`,
+  `accounting/<ISO>-<PLAN>.sql`) y un flag, sin tocar el esquema de la base.
+- **El plan de cuentas se niega después del primer asiento.** Si hay que cambiar de país a un tenant que ya facturó, es
+  `db/seed/country/co/puc-replace-PGC.sql`, que sí remapea, y hay que revisarlo antes de correrlo.
+- **`--country` acepta varios (`CO,ES`) para la geografía, pero el plan de cuentas es solo del primero.** Un tenant tiene un
+  plan de cuentas, no dos.
+- Los seeds de este repo (`db/seed/`) son manuales: no los corre ningún script. `provisioning/` para lo que se aplica al
+  habilitar un negocio, `country/<iso>/` para una conversión de país, `demo/` para pruebas.
+
 ## Qué crea el provisioning
 
 ### Keycloak (realm `arcadia`)
