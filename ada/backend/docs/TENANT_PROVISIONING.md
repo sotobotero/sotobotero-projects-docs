@@ -190,18 +190,26 @@ Type the tenant slug to confirm destruction: _
 ## Siembra del provisioning: qué hay, de qué país y quién lo usa
 
 El provisioning no siembra "datos de negocio": limpia el clon y le pone lo que el tenant necesita para operar en su país.
-Estos archivos **no son migraciones** y no viven todos en este repo: los que el script copia al contenedor están en
-`infraestructure-as-code/docker-compose/postgres/db/dbfiles/` (abreviado `dbfiles/` en la tabla).
+Estos archivos **no son migraciones** y viven todos aquí, en `db/seed/provisioning/`, porque siembran el modelo de datos que
+este repo define. El script de provisioning (que corre en el host, repo de infraestructura) **no los tiene al lado**: hay que
+decirle dónde están con `--seed-dir=<ruta>` o `ADA_SEED_DIR`; si no los encuentra, se detiene antes de tocar ninguna base.
+
+```bash
+bash provision-tenant.sh db:qa public 900987654 "Empresa S.A.S" --clean-data --country=CO \
+  --seed-dir=/home/ionosadmin/ADA_ENTERPISE_CORE/db/seed/provisioning
+```
+
+En Ionos: clonar ADA junto al repo de infraestructura (o subir `db/seed/provisioning/` en el despliegue).
 
 | Pieza | Qué es | Depende del país | Quién la usa | Dónde vive |
 |---|---|---|---|---|
-| `dbfiles/otherfiles/clean-tenant-data.sql` | Borra los datos de negocio del clon y deja catálogos e `id=1` | No | provision, con `--clean-data` | infra |
-| `dbfiles/nomenclature/generic.sql` | Tipos de vía y países: la base sobre la que se apoya cualquier geografía | No | provision, con `--country` | infra |
-| `dbfiles/nomenclature/CO.sql` | Geografía DIVIPOLA (Colombia) | Sí, `CO` | provision, `--country=CO` | infra |
-| `dbfiles/nomenclature/ES.sql` | Geografía de España | Sí, `ES` | provision, `--country=ES` | infra |
-| `dbfiles/accounting/CO-PUC.sql` | Plan Único de Cuentas colombiano (2.520 cuentas, 66 activas), impuestos y métodos de pago; reemplaza el plan clonado en una transacción y **se niega si el tenant ya tiene movimientos contables** | Sí, `CO` | provision, con `--country` (primer país) | infra |
-| `dbfiles/accounting/ES-PGC.sql` | Plan General Contable español (919 cuentas, 20 activas), impuestos y métodos de pago; misma regla | Sí, `ES` | provision, idem | infra |
-| Consumidor Final DIAN (NIT 222222222222) | Cliente obligatorio para facturar electrónicamente en Colombia; la geografía se resuelve sola desde la nomenclatura | Sí, `CO` | provision, con `--seed-consumidor-final`; es **SQL dentro de `provision-tenant-db.sh`**, idempotente por documento | infra (script) |
+| `db/seed/provisioning/clean-tenant-data.sql` | Borra los datos de negocio del clon y deja catálogos e `id=1` | No | provision, con `--clean-data` | este repo |
+| `db/seed/provisioning/nomenclature/generic.sql` | Tipos de vía y países: la base sobre la que se apoya cualquier geografía | No | provision, con `--country` | este repo |
+| `db/seed/provisioning/nomenclature/CO.sql` | Geografía DIVIPOLA (Colombia) | Sí, `CO` | provision, `--country=CO` | este repo |
+| `db/seed/provisioning/nomenclature/ES.sql` | Geografía de España | Sí, `ES` | provision, `--country=ES` | este repo |
+| `db/seed/provisioning/accounting/CO-PUC.sql` | Plan Único de Cuentas colombiano (2.520 cuentas, 66 activas), impuestos y métodos de pago; reemplaza el plan clonado en una transacción y **se niega si el tenant ya tiene movimientos contables** | Sí, `CO` | provision, con `--country` (primer país) | este repo |
+| `db/seed/provisioning/accounting/ES-PGC.sql` | Plan General Contable español (919 cuentas, 20 activas), impuestos y métodos de pago; misma regla | Sí, `ES` | provision, idem | este repo |
+| Consumidor Final DIAN (NIT 222222222222) | Cliente obligatorio para facturar electrónicamente en Colombia; la geografía se resuelve sola desde la nomenclatura | Sí, `CO` | provision, con `--seed-consumidor-final`; es **SQL dentro de `provision-tenant-db.sh`** (infra), idempotente por documento | infra (script) |
 | `db/seed/provisioning/provider-plans-default.sql` | Planes de proveedora para un marketplace que no nació de una solicitud | No, pero solo aplica a un marketplace | a mano (`psql -d ada_master -v tenant=<slug>`) | este repo |
 | `db/seed/demo/*.sql` | Escenarios de prueba (lotes, métodos de pago) | No | a mano en una base de pruebas | este repo |
 
