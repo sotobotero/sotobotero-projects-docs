@@ -385,7 +385,7 @@ Son **datos**, no código. Se conceden y se quitan con filas, y ninguna concede 
 
 | Autoridad | Dónde vive | Alcance | Qué permite | Qué **no** permite |
 |---|---|---|---|---|
-| **Operador de plataforma** | `ada_master.users.platform_operator = true` | **todos** los tenants | aprobar/rechazar el **alta de un tenant completo** (onboarding) y marcarla aprovisionada; es la única que puede, porque el tenant aún no existe cuando se aprueba | **no** da administración de marketplace de ningún tenant: eso exige membresía y permiso **en cada uno** |
+| **Operador de plataforma** | `ada_master.users.platform_operator = true` | **todos** los tenants | aprobar/rechazar el **alta de un tenant completo** (onboarding), marcarla aprovisionada y decidir o corregir **quién cobra la comisión del negocio** (al aprobar y, con motivo, después: `setTenantRequestCommissionOwner`); es la única que puede, porque el tenant aún no existe cuando se aprueba | **no** da administración de marketplace de ningún tenant: eso exige membresía y permiso **en cada uno** |
 | **Administrador de tenant** | membresía **staff activa** en ese tenant + `PLATFORM_MEMBERSHIPS_MANAGE` en **su** base | **un** tenant | ver y gestionar las **solicitudes de marketplace** de ese tenant: activar, suspender, cambiar plan, autorizar perfil, decidir el dueño de la comisión | no toca altas de tenants completos, ni tenants donde no tenga membresía |
 | **Operador sobre varios tenants** (mover prestadoras) | la misma que la anterior, **en origen y destino** | **dos** tenants | mover una membresía de proveedora entre dos tenants donde es administrador; `moveTargets` solo lista esos | no mueve hacia tenants donde no es administrador |
 
