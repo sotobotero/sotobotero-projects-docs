@@ -1,16 +1,61 @@
 # Tenant Provisioning & Destroy
 
+## El camino es el servicio `tenant-provisioner` (2026-11-04)
+
+El alta de un negocio ya no es un script que corre un operador: es una **operación asíncrona del admin de plataforma**. El
+operador aprueba la solicitud y pulsa «Aprovisionar»; la solicitud pasa a `provisioning`, y el servicio
+`arcadia/infraestructuradomain/tenant-provisioner` (Quarkus) crea el tenant mientras el admin sigue usable. El operador refresca
+la fila y ADA pregunta el estado: `running` la deja como está, `failed` o `unknown` la devuelven a `approved` con el paso y el
+mensaje en `provision_error`, y `done` corre el cierre y la deja `provisioned`.
+
+**Quién escribe qué** (migración 199):
+
+| Pieza | Quién la escribe | Qué hace ADA |
+|---|---|---|
+| Base del negocio (clon + limpieza + seeds del país y de los módulos) | servicio (o el script, a mano) | nada |
+| Usuario de Keycloak del negocio (login = NIT, clave inicial = NIT) | servicio | nada |
+| `ada_master.tenant_registry`, `users`, `memberships` | servicio | nada: ADA no las escribe en el alta |
+| `subscription`, licencia (`plan_id`, `max_users`, `access_until`), activación y dueño de la comisión | **ADA** | el cierre comercial, en una transacción |
+| `tenant_request` (estado, master destino, plantilla, error, fechas) y `platform_audit` | **ADA** | el ciclo de vida de la solicitud |
+| Aviso `tenant-welcome` (usuario y clave inicial) | **ADA** | lo encola en la outbox en la misma transacción |
+| `ada_master.hosts` | nadie todavía | el dominio está aplazado: la dirección pedida (`desiredHost`) queda guardada en la solicitud |
+| `core-access.sql` (acceso total de `root`), `platform-operator.sql`, `hosts.sql` | una persona | pasos `manual` del manifiesto |
+
+**Destino: master y plantilla.** El destino del alta no es un «entorno»: es la **master** (la base `ada_master` de un
+despliegue) en la que se escribe el negocio y la **plantilla** de la que se clona su base. Los dos viajan en la petición
+(`provisionTenantRequest(id, masterDb, source)`): sin `masterDb` se usa la de esta ADA (`hibernate.master-database`,
+`ADA_MASTER_DATABASE`); sin `source`, la plantilla por defecto del servicio. `ada.provisioner.masters` es la lista (coma
+separada, por defecto solo la propia) de masters a las que **este** despliegue puede apuntar; fuera de ella la mutación responde
+`403 TENANT_PROVISION_MASTER_NOT_ALLOWED` sin tocar la solicitud. `ada.provisioner.default-source` es la plantilla que el
+diálogo propone (vacía = la del servicio). Los dos valores se guardan en `tenant_request.provision_master_db` y
+`provision_source` y el refresco pregunta al servicio por la master guardada. El diálogo los arma con las queries
+`provisionMasters` y `provisionDefaultSource`.
+
+ADA manda **solo el nombre de la master**: las credenciales y la conexión son del servicio, que únicamente sabe abrir las
+masters que tiene configuradas. Por eso un token filtrado no sirve para escribir en una base que el servicio no conozca.
+
+**El cierre comercial solo corre contra la master propia.** Si el operador lanza un alta contra otra master (un ensayo, o un
+tenant de otro despliegue), la solicitud se marca `provisioned` y se audita con `commercial=no`, pero **no** se activa la
+suscripción, no se aplica licencia, no se escribe el dueño de la comisión y **no se encola** el aviso de credenciales: no se le
+manda un correo de bienvenida a un cliente por un tenant de prueba.
+
+Los scripts siguen existiendo como herramienta **manual/local y de emergencia** (y el respaldo `markTenantProvisioned`), y son
+el rollback mientras el servicio no lleve un ciclo completo en producción. El manifiesto de lo que se siembra es el mismo para
+los dos: `db/seed/provisioning/provisioning.json` (ver `db/seed/provisioning/README.md` y `work/tenant-onboarding/plan.md`,
+Section 9). La decisión y su consecuencia de seguridad están en `.ai/ADRs/ADR-008-el-aprovisionador-escribe-ada-master-y-recibe-el-destino.md`.
+
 ## Scripts
 
 | Script | Dónde corre | Rol |
 |---|---|---|
-| `provision-tenant.sh` | Host (Ionos) | Orquesta Keycloak + DB — punto de entrada para producción/staging |
+| `tenant-provisioner` | Red privada del Swarm (servicio Quarkus) | **El camino**: base del negocio, Keycloak y `ada_master` del alta, lanzado desde el admin |
+| `provision-tenant.sh` | Host (Ionos) | Manual/local y emergencia: orquesta Keycloak + DB a mano |
 | `provision-tenant-db.sh` | Contenedor Patroni | Operaciones psql (llamado por los anteriores) |
 | `provision-tenant-local.sh` | Máquina local del dev | Provisiona tenant en postgres local + Ionos Keycloak vía HTTP (sin Docker ni SSH) |
-| `destroy-tenant.sh` | Host (Ionos) | Destruye un tenant completo — irreversible |
+| `destroy-tenant.sh` | Host (Ionos) | Destruye un tenant completo — irreversible (el servicio no tiene destroy por HTTP en v1) |
 | `destroy-tenant-db.sh` | Contenedor Patroni | DROP DB + limpieza ada_master (llamado por el anterior) |
 
-Todos en: `infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles/`
+Los scripts están en: `infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles/`
 
 > El repositorio se llama `infraestructure-as-code` (así está en GitHub y así está en Ionos). En la máquina local el
 > clon vive en una carpeta llamada `infraestructure-ascode`: es el mismo repo, solo cambia el nombre de la carpeta.
@@ -18,6 +63,50 @@ Todos en: `infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles
 **Credenciales requeridas del operador: ninguna.** La password de Keycloak se lee directamente del Docker secret montado en el contenedor Keycloak (`/run/secrets/keycloak-admin-password-staging`) mediante `docker exec cat`. Solo se necesita acceso a Docker.
 
 ---
+
+## Un correo por negocio
+
+Cada negocio lleva **su propio** correo de contacto y el realm de Keycloak **no admite correos duplicados**
+(`duplicateEmailsAllowed=false`; permitirlos rompería la recuperación de contraseña: dos identidades con el mismo correo). Si
+el correo de la solicitud ya tiene identidad, el paso `keycloak` falla y el `provision_error` de la fila lo dice con la
+salida:
+
+- usar un **alias** del buzón real (subdirección con `+`): `ana+negocio2@gmail.com` llega al mismo buzón y Keycloak lo
+  ve como otro correo; sirve cualquier sufijo corto sin espacios, comas, `;`, `<>`, comillas ni segunda `@`, y el login del
+  negocio sigue siendo usuario = NIT, o
+- **corregir el correo** de la solicitud con «Editar» (se puede mientras esté `pending` o `approved`) y relanzar el alta.
+
+Nada más se escribe en ese intento: la base y el resto de pasos van antes, pero el alta no se marca aprovisionada. El aviso
+de bienvenida se manda al correo de la solicitud, no lo envía Keycloak.
+
+## Plantilla local del clon
+
+`CREATE DATABASE … TEMPLATE` exige que la base origen no tenga conexiones, y en una máquina de desarrollo `qa` suele tener
+DBeaver encima. Por eso el aprovisionamiento local clona de una plantilla dedicada, `tenant_template_v1`, que se crea una vez
+(sin sesiones) y no se toca:
+
+```bash
+cd infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles   # en la máquina: infraestructure-ascode
+bash local-template-db.sh                 # tenant_template_v1 desde qa
+bash local-template-db.sh --refresh       # rehacerla tras migraciones o cambios de datos
+```
+
+En el `.env` del aprovisionador: `PROVISIONING_DEFAULT_SOURCE=db:tenant_template_v1`. Con migraciones nuevas, la plantilla se
+migra como un tenant más: `apply-migrations.sh --no-move --docker --target-db=tenant_template_v1`.
+
+## Limpieza de una prueba local
+
+Deshacer un alta local (base del tenant, filas en `ada_master` y el usuario del Keycloak de ADA local) es un script, no SQL
+a mano:
+
+```bash
+cd infraestructure-as-code/docker-compose/postgres/db/dbfiles/otherfiles   # en la máquina: infraestructure-ascode
+bash destroy-tenant-local.sh <slug> [<nit>] [--keep-keycloak]
+```
+
+Borra la base, `provider_plan`, `hosts`, `memberships`, `users` (login = NIT) y `tenant_registry` en ese orden, y el usuario
+de Keycloak del realm que indique el `.env.debug.local` de ADA (con `--keep-keycloak` no lo toca). Es idempotente, se niega a
+correr si el Postgres no es el contenedor `postgres_local`, y el NIT se deduce del slug si no se pasa.
 
 ## Provisioning local (dev)
 
@@ -162,6 +251,20 @@ psql -d <bd del tenant> -v ON_ERROR_STOP=1 -f db/seed/provisioning/referrals/cam
 
 Qué abre cada permiso y qué se siembra en cada tipo de tenant: [`db/seed/provisioning/README.md`](../db/seed/provisioning/README.md).
 
+### Activar la administración de referidos a un tenant que ya existe
+
+El permiso que abre la pantalla `/red` (`NETWORK_MANAGE`) se siembra con el módulo; un tenant ya creado lo recibe corriendo el mismo archivo, que es idempotente:
+
+```bash
+# permiso sin vista, concedido al administrador y a root (y sincronizado a sus usuarios)
+psql -d <bd del tenant> -v ON_ERROR_STOP=1 -f db/seed/provisioning/modules/referrals.sql
+# opcional, solo en una base de pruebas: modelos de comisión de ejemplo y una red de diez personas
+psql -d <bd del tenant> -v ON_ERROR_STOP=1 -f db/seed/demo/demo-referidos-modelos.sql
+psql -d <bd del tenant> -v ON_ERROR_STOP=1 -f db/seed/demo/demo-referidos-red.sql
+# limpieza de lo demo
+psql -d <bd del tenant> -v ON_ERROR_STOP=1 -f db/seed/demo/clean-demo-referidos.sql
+```
+
 ### Idempotencia
 
 El script es re-ejecutable sin DROP previo. Si la DB ya existe, salta el CREATE y el clone y solo actualiza registry, users, memberships, user_system y company_profile.
@@ -174,7 +277,7 @@ Tenant de pruebas que atiende la reserva anónima del host `stg-toki.sotobotero.
 
 ```bash
 bash provision-tenant.sh db:qa public 9850777 "Sotobotero Marketplace" \
-  sotobotero+marketplace@gmail.com --clean-data --country=CO --public-booking=stg-toki.sotobotero.com
+  marketplace@empresa.co --clean-data --country=CO --public-booking=stg-toki.sotobotero.com
 ```
 
 Slug `so9850777`. `hosts.host` es clave primaria: antes de asociar un host a otro tenant hay que cambiar o borrar su fila
@@ -218,6 +321,10 @@ bash provision-tenant.sh db:qa public 900987654 "Empresa S.A.S" --clean-data --c
 
 En Ionos: clonar ADA junto al repo de infraestructura (o subir `db/seed/provisioning/` en el despliegue).
 
+Quién la resuelve: el **manifiesto** `db/seed/provisioning/provisioning.json` (y `db/tools/resolve-seeds.py`) la convierten en
+la lista ordenada de lo que se siembra, con su ámbito (`tenant` o `ada_master`). El servicio y el script lo leen; el
+`appliedBy` de cada paso dice quién puede aplicarlo (`provisioner`, `script`, `manual`).
+
 | Pieza | Qué es | Depende del país | Quién la usa | Dónde vive |
 |---|---|---|---|---|
 | `db/seed/provisioning/clean-tenant-data.sql` | Borra los datos de negocio del clon y deja catálogos e `id=1` | No | provision, con `--clean-data` | este repo |
@@ -231,7 +338,7 @@ En Ionos: clonar ADA junto al repo de infraestructura (o subir `db/seed/provisio
 | `db/seed/provisioning/hosts.sql` | Registra el host del tenant en `ada_master.hosts` con su zona (sin fila no hay zona pública: catálogo, reservas, alta de proveedora) | No | a mano (`psql -d ada_master -v host=<host> -v zona=public -v tenant=<slug>`) o con `--public-booking=<host>` | este repo |
 | `db/seed/provisioning/platform-operator.sql` | Marca en `ada_master.users` quién es operador de plataforma (segunda llave del admin de plataforma, junto al permiso del tenant) | No | a mano (`psql -d ada_master -v login=<login>`) | este repo |
 | `db/seed/provisioning/provider-plans-default.sql` | Planes de proveedora para un marketplace que no nació de una solicitud | No, pero solo aplica a un marketplace | a mano (`psql -d ada_master -v tenant=<slug>`) | este repo |
-| `db/seed/demo/*.sql` | Escenarios de prueba (lotes, métodos de pago) | No | a mano en una base de pruebas | este repo |
+| `db/seed/demo/*.sql` | Escenarios de prueba (lotes, métodos de pago, modelos y red de referidos) | No | a mano en una base de pruebas | este repo |
 
 Reglas que se desprenden de ahí:
 
@@ -373,8 +480,10 @@ La fila de `platform_operator` **no** es una membresía: vive en `users` y solo 
 | `Cajero` | no | 4 | staff | caja |
 | `COMERCIAL` | no | 3 | staff | clientes y contratos |
 | `usuario basico` | no | 1 | staff | mínimo (cambio de contraseña) |
-| `marketplace_provider` | no | 2 | public | portal de proveedora: sus servicios, su agenda, sus fotos |
-| `marketplace_client` | no | 1 | public | cambio de contraseña; el resto de vistas son públicas |
+| `Proveedoras del marketplace` | no | 2 | public | portal de proveedora: sus servicios, su agenda, sus fotos |
+| `Clientes del marketplace` | no | 1 | public | cambio de contraseña; el resto de vistas son públicas |
+
+Los nombres de esta tabla son los de partida: el código no los usa. Cada rol que cumple un propósito (`Clientes del marketplace`, `Proveedoras del marketplace`, `usuario basico`) tiene un **tipo** del catálogo (`Common.RoleTypes`, migración 197) y es por el tipo que el código lo encuentra; el tenant puede renombrarlo. Si root debe saltarse o no las comprobaciones de permiso lo decide `db/seed/provisioning/core-access.sql` (`-v platform_bypass=true|false`).
 
 Los permisos por módulo (inventario, facturación, contabilidad, agenda, verticales) y a qué rol se conceden están en
 [`db/seed/provisioning/modules/`](../db/seed/provisioning/README.md): encender un módulo es conceder sus permisos al rol.
