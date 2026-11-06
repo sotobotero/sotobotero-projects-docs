@@ -94,6 +94,27 @@ bash local-template-db.sh --refresh       # rehacerla tras migraciones o cambios
 En el `.env` del aprovisionador: `PROVISIONING_DEFAULT_SOURCE=db:tenant_template_v1`. Con migraciones nuevas, la plantilla se
 migra como un tenant más: `apply-migrations.sh --no-move --docker --target-db=tenant_template_v1`.
 
+La plantilla **no está en `tenant_registry`**, así que `apply-migrations.sh` sin `--target-db` nunca la migra: un tenant nuevo
+nace con el esquema de la plantilla, y ningún seed del aprovisionamiento crea columnas (los seeds de `modules/` siembran datos y
+permisos). Una plantilla atrasada se nota como `column ... does not exist` al entrar al tenant nuevo, no como un error de permisos.
+Tras cada migración de tenant: migrar la plantilla y comprobar que `qa` (de donde se hace) también la tiene.
+
+### Restaurar un tenant de producción en local
+
+El aprovisionador da acceso a `appuser` en la base que clona (`DatabaseProvisioner`: `CONNECT`, `USAGE` por esquema, permisos de
+tablas, secuencias y funciones, y `DEFAULT PRIVILEGES`). Una restauración a mano con `pg_restore --no-privileges` descarta los
+permisos y ADA falla con `permission denied for table user_system`. Después de restaurar, dar el mismo acceso:
+
+```sql
+-- como admin, sobre la base restaurada (esquemas: public, accounting, audit, billing, diary, hibernate_audit, inventory, medical)
+GRANT USAGE ON SCHEMA <esquema> TO appuser;
+GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRIGGER ON ALL TABLES IN SCHEMA <esquema> TO appuser;
+GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA <esquema> TO appuser;
+```
+
+Luego registrar el tenant en `ada_master` local (`tenant_registry` y una `memberships` del usuario `root`) y aplicar las
+migraciones pendientes con `--no-move --target-db=<base>`.
+
 ## Limpieza de una prueba local
 
 Deshacer un alta local (base del tenant, filas en `ada_master` y el usuario del Keycloak de ADA local) es un script, no SQL
