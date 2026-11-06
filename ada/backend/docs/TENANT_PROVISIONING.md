@@ -8,7 +8,7 @@ operador aprueba la solicitud y pulsa «Aprovisionar»; la solicitud pasa a `pro
 la fila y ADA pregunta el estado: `running` la deja como está, `failed` o `unknown` la devuelven a `approved` con el paso y el
 mensaje en `provision_error`, y `done` corre el cierre y la deja `provisioned`.
 
-**Quién escribe qué** (migración 199):
+**Quién escribe qué** (migraciones 199 y 207):
 
 | Pieza | Quién la escribe | Qué hace ADA |
 |---|---|---|
@@ -16,28 +16,32 @@ mensaje en `provision_error`, y `done` corre el cierre y la deja `provisioned`.
 | Usuario de Keycloak del negocio (login = NIT, clave inicial = NIT) | servicio | nada |
 | `ada_master.tenant_registry`, `users`, `memberships` | servicio | nada: ADA no las escribe en el alta |
 | `subscription`, licencia (`plan_id`, `max_users`, `access_until`), activación y dueño de la comisión | **ADA** | el cierre comercial, en una transacción |
-| `tenant_request` (estado, master destino, plantilla, error, fechas) y `platform_audit` | **ADA** | el ciclo de vida de la solicitud |
+| `tenant_request` (estado, entorno pedido, master y plantilla resueltos, error, fechas) y `platform_audit` | **ADA** | el ciclo de vida de la solicitud |
 | Aviso `tenant-welcome` (usuario y clave inicial) | **ADA** | lo encola en la outbox en la misma transacción |
 | `ada_master.hosts` | nadie todavía | el dominio está aplazado: la dirección pedida (`desiredHost`) queda guardada en la solicitud |
 | `core-access.sql` (acceso total de `root`), `platform-operator.sql`, `hosts.sql` | una persona | pasos `manual` del manifiesto |
 
-**Destino: master y plantilla.** El destino del alta no es un «entorno»: es la **master** (la base `ada_master` de un
-despliegue) en la que se escribe el negocio y la **plantilla** de la que se clona su base. Los dos viajan en la petición
-(`provisionTenantRequest(id, masterDb, source)`): sin `masterDb` se usa la de esta ADA (`hibernate.master-database`,
-`ADA_MASTER_DATABASE`); sin `source`, la plantilla por defecto del servicio. `ada.provisioner.masters` es la lista (coma
-separada, por defecto solo la propia) de masters a las que **este** despliegue puede apuntar; fuera de ella la mutación responde
-`403 TENANT_PROVISION_MASTER_NOT_ALLOWED` sin tocar la solicitud. `ada.provisioner.default-source` es la plantilla que el
-diálogo propone (vacía = la del servicio). Los dos valores se guardan en `tenant_request.provision_master_db` y
-`provision_source` y el refresco pregunta al servicio por la master guardada. El diálogo los arma con las queries
-`provisionMasters` y `provisionDefaultSource`.
+**Destino: el entorno.** El destino del alta es un **nombre de entorno** (`staging`, `prod`), no una base. El servicio tiene un
+mapa —en su propio despliegue— que ata para cada entorno la base maestra, el realm de Keycloak y la plantilla de la que se clona
+el negocio; una sola instancia atiende todos los despliegues y el token con el que se llama está amarrado a su entorno. ADA dice
+qué entorno es con `ada.provisioner.environment` (`ADA_PROVISIONER_ENVIRONMENT`): lo manda en el cuerpo del alta
+(`provisionTenantRequest(id)`) y lo repite en la consulta del estado (`GET /v1/tenants/{nit}?environment=`). **El operador no
+elige entorno**: lo decide el back-office en el que ya está. Sin entorno configurado el aprovisionamiento está apagado y la
+mutación responde `503 TENANT_PROVISIONER_NOT_CONFIGURED` diciendo qué falta, igual que sin URL o sin token.
 
-ADA manda **solo el nombre de la master**: las credenciales y la conexión son del servicio, que únicamente sabe abrir las
-masters que tiene configuradas. Por eso un token filtrado no sirve para escribir en una base que el servicio no conozca.
+Lo pedido queda en `tenant_request.provision_environment` (migración 207) y es con lo que el refresco pregunta al servicio.
+`provision_master_db` y `provision_source` son **auditoría de lo que el servicio resolvió**: se escriben cuando el trabajo
+cierra, no antes, y son los que el cierre compara y registra.
 
-**El cierre comercial solo corre contra la master propia.** Si el operador lanza un alta contra otra master (un ensayo, o un
-tenant de otro despliegue), la solicitud se marca `provisioned` y se audita con `commercial=no`, pero **no** se activa la
-suscripción, no se aplica licencia, no se escribe el dueño de la comisión y **no se encola** el aviso de credenciales: no se le
-manda un correo de bienvenida a un cliente por un tenant de prueba.
+ADA manda **solo el nombre del entorno**: las credenciales y la conexión son del servicio, que únicamente sabe abrir lo que su
+mapa declara. Por eso un token filtrado no sirve para escribir en una base que el servicio no conozca.
+
+**El cierre es siempre comercial, y está cortado por la master.** Cuando el servicio dice `done`, ADA compara **la master que
+el servicio resolvió** con la suya (`hibernate.master-database`, `ADA_MASTER_DATABASE`). Si no coincide, la solicitud falla con
+`TENANT_PROVISION_MASTER_MISMATCH` (el mensaje dice la resuelta y la propia), vuelve a `approved` con `provision_error` y no se
+activa la suscripción, no se aplica licencia, no se escribe el dueño de la comisión y **no se encola** el aviso de credenciales:
+no hay rama de «cierre técnico» ni se le manda un correo de bienvenida a un cliente por un alta mal dirigida. Si coincide, el
+cierre corre completo: suscripción, licencia, cuota de media, comisión y `tenant-welcome`, en una transacción.
 
 Los scripts siguen existiendo como herramienta **manual/local y de emergencia** (y el respaldo `markTenantProvisioned`), y son
 el rollback mientras el servicio no lleve un ciclo completo en producción. El manifiesto de lo que se siembra es el mismo para
@@ -91,8 +95,14 @@ bash local-template-db.sh                 # tenant_template_v1 desde qa
 bash local-template-db.sh --refresh       # rehacerla tras migraciones o cambios de datos
 ```
 
-En el `.env` del aprovisionador: `PROVISIONING_DEFAULT_SOURCE=db:tenant_template_v1`. Con migraciones nuevas, la plantilla se
-migra como un tenant más: `apply-migrations.sh --no-move --docker --target-db=tenant_template_v1`.
+En el `.env` del aprovisionador, la entrada del mapa de ese entorno (una por entorno, `<nombre>=<master>|<realm>|<plantilla>`):
+
+```properties
+PROVISIONING_ENVIRONMENTS=staging=ada_master_staging|arcadia-staging|db:tenant_template_v1
+```
+
+Con migraciones nuevas, la plantilla se migra como un tenant más:
+`apply-migrations.sh --no-move --docker --target-db=tenant_template_v1`.
 
 La plantilla **no está en `tenant_registry`**, así que `apply-migrations.sh` sin `--target-db` nunca la migra: un tenant nuevo
 nace con el esquema de la plantilla, y ningún seed del aprovisionamiento crea columnas (los seeds de `modules/` siembran datos y
