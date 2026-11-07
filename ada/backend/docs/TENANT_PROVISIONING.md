@@ -125,6 +125,27 @@ GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA <esquema> TO appuser;
 Luego registrar el tenant en `ada_master` local (`tenant_registry` y una `memberships` del usuario `root`) y aplicar las
 migraciones pendientes con `--no-move --target-db=<base>`.
 
+La plantilla **no está en `tenant_registry`**, así que `apply-migrations.sh` sin `--target-db` nunca la migra: un tenant nuevo
+nace con el esquema de la plantilla, y ningún seed del aprovisionamiento crea columnas (los seeds de `modules/` siembran datos y
+permisos). Una plantilla atrasada se nota como `column ... does not exist` al entrar al tenant nuevo, no como un error de permisos.
+Tras cada migración de tenant: migrar la plantilla y comprobar que `qa` (de donde se hace) también la tiene.
+
+### Restaurar un tenant de producción en local
+
+El aprovisionador da acceso a `appuser` en la base que clona (`DatabaseProvisioner`: `CONNECT`, `USAGE` por esquema, permisos de
+tablas, secuencias y funciones, y `DEFAULT PRIVILEGES`). Una restauración a mano con `pg_restore --no-privileges` descarta los
+permisos y ADA falla con `permission denied for table user_system`. Después de restaurar, dar el mismo acceso:
+
+```sql
+-- como admin, sobre la base restaurada (esquemas: public, accounting, audit, billing, diary, hibernate_audit, inventory, medical)
+GRANT USAGE ON SCHEMA <esquema> TO appuser;
+GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRIGGER ON ALL TABLES IN SCHEMA <esquema> TO appuser;
+GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA <esquema> TO appuser;
+```
+
+Luego registrar el tenant en `ada_master` local (`tenant_registry` y una `memberships` del usuario `root`) y aplicar las
+migraciones pendientes con `--no-move --target-db=<base>`.
+
 ## Limpieza de una prueba local
 
 Deshacer un alta local (base del tenant, filas en `ada_master` y el usuario del Keycloak de ADA local) es un script, no SQL
@@ -487,6 +508,22 @@ Cuatro capas, de fuera hacia adentro. Ninguna sustituye a otra: cada decisión s
 
 ⚠️ El `role` de la **membresía** no autoriza por sí mismo: describe la puerta y el origen. La autorización dentro del tenant es
 el rol de **su** base de datos.
+
+### Permisos sin pantalla que siembra cada módulo (impresión)
+
+Tres permisos sin vista (`public.permission.view IS NULL`, buscados por `action`; `AdaPermission` los nombra) controlan la impresión. Cada archivo de módulo
+crea el permiso solo si falta (`SELECT ... WHERE view IS NULL AND action = ...`), así que dos módulos que lo siembran no duplican la fila y el orden en que se
+activen no importa. Un tenant nuevo los recibe al aprovisionarse el módulo; un tenant que ya existía, por la migración.
+
+| Permiso | Qué permite | Lo siembra el módulo | A qué roles | Migración (tenants existentes) |
+|---|---|---|---|---|
+| `PRINT_AGENT` | ver la dirección y el secreto del agente de impresión en `companyProfile` (sin él salen `null`); lo usan las etiquetas, los tickets y la comanda | `billing` e `inventory` (la regla: roles con algún permiso de las pantallas que imprimen, más `Administrador del sistema` y `root`), `restaurant` (`Mesero`, `Administrador del sistema`, `root`) | los que ya tienen productos, documentos de inventario, facturas, separados o cartera, y TABLE_SERVICE | 217 |
+| `INVOICE_PRINT` | `GET /restapi/v1/billing/invoices/{id}/ticket`: el ticket de venta en PDF | `billing` (la regla: roles con algún permiso de la pantalla de facturas o TABLE_SERVICE, más `Administrador del sistema` y `root`), `restaurant` (`Mesero`, `Administrador del sistema`, `root`) | los que hoy pueden facturar | 218 |
+
+Reglas comunes: nadie que imprime hoy pierde la capacidad al desplegar (la migración da el permiso a los roles y a los usuarios con grant vigente, sin tocar grants
+ni revokes; un usuario revocado no lo gana); el JSF no cambia (lee el perfil de la sesión en el servidor). La regla del seed y la de la migración son idénticas y una
+prueba (`Migration217PrintAgentPermissionTest`, `Migration218InvoicePrintPermissionTest`) vigila que no se separen; `RestaurantModuleSeedTest` prueba lo que recibe un
+tenant nuevo con el módulo `restaurant`.
 
 ### Roles de membresía (`ada_master.memberships.role`)
 
