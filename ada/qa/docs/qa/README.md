@@ -16,6 +16,7 @@ validación humana de que todo cuadra junto.
 | 4 | Reporte de caja | Que la caja refleje lo que de verdad entró y salió, venga del flujo que venga | [e2e-reporte-de-caja.md](e2e-reporte-de-caja.md) |
 | 5 | **Ciclo completo** | Compra → venta → separado → fiado → cartera → pago y devolución al proveedor, y conciliación de inventario, caja, cartera y cuentas por pagar | [e2e-ciclo-completo.md](e2e-ciclo-completo.md) |
 | 6 | Gimnasio (reservas y membresías) | Caso de uso de un gimnasio de punta a punta | [e2e-gym-manual-tests.md](e2e-gym-manual-tests.md) |
+| 7 | Restaurante (demo al cliente) | Carta, mesa, pedido, cocina, cobro, kardex, plato compuesto y prefabricados. Guion de apoyo para presentar, no guía de pruebas | [e2e-restaurante-demo.md](e2e-restaurante-demo.md) |
 
 Documentos de apoyo (para quien prepara datos, no para probar):
 
