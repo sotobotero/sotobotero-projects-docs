@@ -288,6 +288,8 @@ El NIT se puede ingresar normalizado o en formato colombiano estándar (`123.456
 
 ### Activar el marketplace a un tenant que ya existe
 
+El catálogo de medios de pago se siembra con `db/seed/provisioning/modules/payment-methods.sql` (módulo `billing`): nombres estándar, sin el duplicado del efectivo y con el crédito de tercero (Sistecrédito y uno genérico).
+
 Los seeds están en `db/seed/provisioning/marketplace/` y son idempotentes. En orden:
 
 ```bash
