@@ -18,15 +18,20 @@ Regla de la presentación: **nunca explicar una pantalla**. Si hace falta explic
 
 ## Qué pidió el cliente y dónde se ve
 
+El orden de la tabla es el de la demo: se recorre el servicio como ocurre en el salón y después se muestra lo que deja.
+
 | Necesidad | Escena | Pantalla |
 |---|---|---|
-| Tomar pedidos en la mesa con 3 meseros | 2 y 3 | Mesas y Pedido (celular) |
-| Que la cocina vea y prepare los platos | 4 | Cocina (tableta o pantalla) |
-| Cobrar la mesa, con ticket o factura electrónica | 5 | Cuenta y cobro |
 | Carta amplia, con fotos, por sede o por mesa | 1 | Configurar → Carta y Platos |
+| Abrir mesa y tomar pedidos con 3 meseros | 2 y 3 | Mesas y Pedido (celular) |
+| Que la cocina vea y prepare los platos | 4 | Cocina (tableta o pantalla) |
+| Cobrar la mesa, con ticket o factura electrónica, sin dejar cobrar platos sin servir | 5 | Cuenta y cobro |
 | Controlar lo que sale de la cocina | 6 | Inventario → Kardex |
 | Platos compuestos y productos prefabricados | 7 y 8 | Productos compuestos, código de barras |
-| Parte administrativa y financiera | 9 | Reportes de caja, cartera, contabilidad |
+| Comprar materia prima y deberla al proveedor | 9 | Inventario → Compras y cuentas por pagar |
+| La caja del día: lo cobrado por medio de pago y la propina aparte | 10 | Reporte de caja |
+| Parte administrativa y financiera (DIAN, cartera, contabilidad) | 11 | Factura electrónica, cartera, contabilidad |
+| «¿Y esto cómo lo configuro yo?» (respaldo, no guion) | 12 y 13 | Orden de producción, producto compuesto, compras |
 
 ## El recorrido
 
@@ -39,8 +44,8 @@ flowchart LR
     E --> F["📦 6. Inventario<br/>y kardex"]:::stock
     F --> G["🥗 7. Plato<br/>compuesto"]:::stock
     G --> H["🏷️ 8. Prefabricados"]:::stock
-    H --> I["💰 9. Caja<br/>y reportes"]:::caja
-    I --> J["🛒 10. Proveedor<br/>y materia prima"]:::stock
+    H --> I["🛒 9. Proveedor<br/>y materia prima"]:::stock
+    I --> J["💰 10. Caja<br/>y reportes"]:::caja
     J --> K["📒 11. Lo financiero"]:::caja
     classDef sala fill:#dbeafe,stroke:#2563eb,color:#0f172a
     classDef cocina fill:#ffedd5,stroke:#ea580c,color:#0f172a
@@ -49,7 +54,7 @@ flowchart LR
     classDef aviso fill:#fef9c3,stroke:#ca8a04,color:#0f172a
 ```
 
-🔵 sala · 🟠 cocina · 🟢 caja · 🟣 inventario y catálogo. Cada escena dura 2 a 3 minutos. Si hay poco tiempo: 2, 3, 4, 5, 6 y 10. La 12 solo si preguntan cómo se configura.
+🔵 sala · 🟠 cocina · 🟢 caja · 🟣 inventario y catálogo. Cada escena dura 2 a 3 minutos. Si hay poco tiempo: **1, 2, 3, 4, 5 y 6** (el servicio completo con lo que deja en inventario). La 9 si preguntan por compras y cuentas por pagar, y la 12 solo si preguntan cómo se configura.
 
 ## Preparar la empresa de la demo
 
@@ -84,17 +89,31 @@ flowchart LR
 | Marketplace | Sí, con el subdominio `sabor-de-casa` |
 | Asientos extra | 0 |
 
-**Dónde se hace cada paso:**
+**Dónde se hace cada paso** (el mismo recorrido existe en los dos entornos; cambia el host y, con él, la base de datos):
 
-| Paso | Dirección | Quién |
-|---|---|---|
-| 1. Solicitud (el formulario) | <https://ada.sotobotero.com/empezar> | El cliente o quien hace la demo |
-| 3. Aprobar y aprovisionar | <https://ada.sotobotero.com/platform-admin> | Quien administra la plataforma (`root`) |
-| El negocio ya aprovisionado | <https://ada.sotobotero.com/> y, para facturación y caja, <https://ada.sotobotero.com/ADA_ENTERPISE_CORE/> | El dueño, con el usuario del negocio |
-| Marketplace público del negocio | `https://<subdominio>.sotobotero.com`, el que se pidió en el formulario (por ejemplo `sabor-de-casa.sotobotero.com`) | El público |
-| Administrar el marketplace (portal de proveedora) | <https://ada.sotobotero.com/>, menú del negocio | El dueño |
+| Paso | Producción | Staging | Quién |
+|---|---|---|---|
+| 1. Solicitud (el formulario) | <https://ada.sotobotero.com/empezar> | <https://stg-ada.sotobotero.com/empezar> | El cliente o quien hace la demo |
+| 2. Aprobar y aprovisionar | <https://ada.sotobotero.com/platform-admin> | <https://stg-ada.sotobotero.com/platform-admin> | Quien administra la plataforma (`root`) |
+| 3. El negocio (Arcadia: mesas, carta, pedidos, cocina) | <https://ada.sotobotero.com/> | <https://stg-ada.sotobotero.com/> | El dueño, con el usuario del negocio |
+| 4. Facturación y caja (ADA) | <https://ada.sotobotero.com/ADA_ENTERPISE_CORE/> | <https://stg-ada.sotobotero.com/ADA_ENTERPISE_CORE/> | El dueño |
+| Marketplace público del negocio | `https://<subdominio>.sotobotero.com`, el pedido en el formulario (por ejemplo `sabor-de-casa.sotobotero.com`) | solo con host registrado en `ada_master_staging.hosts` y su DNS; hoy el ejemplo vivo es <https://stg-toki.sotobotero.com> | El público |
 
-Para ensayar sin tocar producción, el mismo recorrido existe en `https://stg-ada.sotobotero.com/empezar`.
+**El host decide el entorno, no la pantalla.** El formulario es el mismo en los dos y lo único que lo separa es la dirección desde la
+que se abre:
+
+| Si el formulario se abre en… | La solicitud queda en… | Quién la aprueba | Dónde se ve después |
+|---|---|---|---|
+| `ada.sotobotero.com/empezar` | `ada_master` (**producción**) | `root` de producción | Backoffice de plataforma de producción |
+| `stg-ada.sotobotero.com/empezar` | `ada_master_staging` (**staging**) | `root` de staging | Backoffice de plataforma de staging |
+
+No hay forma de saber el entorno mirando el formulario, así que **antes de enviar, mirar la barra de direcciones**. Una solicitud
+enviada desde un host de producción se aprueba en producción y crea un tenant real ahí: pasó en nov-2026 con una prueba
+(“la espiga dorada”), que hubo que borrar de `ada_master` para no dejar basura en producción.
+
+Ojo con el nombre del subdominio en staging: las direcciones públicas se resuelven por la tabla `hosts` de cada maestro
+(`ada_master` y `ada_master_staging`), así que el mismo `sabor-de-casa` puede existir en los dos entornos sin pisarse solo si se
+registra en cada uno.
 
 En el formulario, marcar **Marketplace** y pedir un subdominio (por ejemplo `sabor-de-casa`). El plan **Restaurante** ya sale entre los
 planes base, hoy con precio **$0** (marcador hasta confirmar el precio). El marketplace no va dentro del plan: se marca aparte, como en
@@ -130,6 +149,7 @@ Los usuarios **Mesero** y **Cocina** se crean desde la pantalla de usuarios de A
 
 | Revisar | Cómo |
 |---|---|
+| Entorno decidido | Si es ensayo, **todo** en `stg-ada.sotobotero.com` (formulario, aprobación y negocio); si es la demo real, todo en `ada.sotobotero.com`. No mezclar hosts: la solicitud nace en el maestro del host desde el que se llena |
 | Negocio de demostración con datos | Semillas `demo-restaurante.sql` y `demo-restaurante-produccion.sql` ya aplicadas |
 | Usuarios | `root` entra siempre. Para mostrar los roles, crear un **Mesero** y un **Cocina** desde la pantalla de usuarios |
 | Una caja abierta | Sin caja no se puede cobrar |
@@ -278,14 +298,7 @@ flowchart TB
 | Crear un producto prefabricado | Genera su código de barras |
 | Pasar la pistola lectora en una compra o venta | Encuentra el producto al instante |
 
-## 9. Caja y reportes
-
-| Hacer | Se ve |
-|---|---|
-| *Reporte de caja* del día | Lo cobrado por medio de pago |
-| Cartera, cuentas por pagar y contabilidad | Se muestran solo si el cliente contrata esos módulos |
-
-## 10. Del proveedor a la cocina (materia prima)
+## 9. Del proveedor a la cocina (materia prima)
 
 Lo que más pesa en un restaurante: comprar materia prima, y que cada plato la gaste según su receta.
 
@@ -300,13 +313,20 @@ Lo que más pesa en un restaurante: comprar materia prima, y que cada plato la g
 Los platos que se preparan por tandas (arroz con pollo, bandeja, ajiaco, limonada) descuentan al cerrar la **orden de producción**,
 no al venderse. Detalle y pasos largos: [compras y cuentas por pagar](e2e-compras-cuentas-por-pagar.md).
 
+## 10. Caja y reportes
+
+| Hacer | Se ve |
+|---|---|
+| *Reporte de caja* del día | Lo cobrado por medio de pago |
+| Cartera, cuentas por pagar y contabilidad | Se muestran solo si el cliente contrata esos módulos |
+
 ## 11. Lo financiero de siempre
 
 | Hacer | Se ve |
 |---|---|
 | Factura electrónica de la mesa (escena 5) | Documento DIAN a nombre del cliente |
 | *Reporte de caja* | Lo cobrado por medio de pago y la propina aparte |
-| Compra a crédito y su abono (escena 10) | Cuenta por pagar y egreso de caja |
+| Compra a crédito y su abono (escena 9) | Cuenta por pagar y egreso de caja |
 | *Contabilidad* | Los asientos de ventas y compras salen de cada operación (causación); los que no tienen período abierto quedan en *Pendientes de contabilizar* |
 
 *Mensaje:* facturación electrónica, causaciones, pagos a proveedores y egresos son los mismos de cualquier negocio; el restaurante
@@ -324,7 +344,7 @@ cómo se cocina el plato:
 | Se arma **al momento** con ingredientes sueltos | **Producto compuesto** (receta) | Al vender: bajan los ingredientes de la receta | Ensalada de la casa, Plato combinado |
 
 Las dos viven en ADA, menú *Inventario*, y antes hace falta que el plato exista como producto (en la carta: *Configurar → Platos*, o
-*Inventario → Productos*) y que los insumos tengan existencias (una compra, escena 10).
+*Inventario → Productos*) y que los insumos tengan existencias (una compra, escena 9).
 
 ### Por tandas: *Inventario → Ordenes de producción*
 
@@ -398,7 +418,7 @@ plato en vez de los ingredientes, el plato tiene existencias: la marca exige sto
 | Mesas, pedido, cocina, cobro, carta por sede y mesa | ✅ Listo y probado | Se muestra completo |
 | Fotos de los platos | ✅ Listo | Requiere el almacenamiento de imágenes activo en el servidor |
 | Reservas por internet | ✅ Construido | El cliente reserva desde el marketplace y entra al mismo pedido. Se contrata como extensión (planes del marketplace). En la demo falta cargar el servicio «Reserva» |
-| Descuento por receta (plato compuesto) | 🟡 Validar antes de la demo | Ensalada y Plato combinado descuentan al vender (migración 214 aplicada). Hacer la escena 10 completa en el negocio de la demo la víspera; si no cuadra, mostrar la receta y el kardex de la producción. Los demás platos bajan sus ingredientes al cerrar una orden de producción |
+| Descuento por receta (plato compuesto) | 🟡 Validar antes de la demo | Ensalada y Plato combinado descuentan al vender (migración 214 aplicada). Hacer la escena 9 completa en el negocio de la demo la víspera; si no cuadra, mostrar la receta y el kardex de la producción. Los demás platos bajan sus ingredientes al cerrar una orden de producción |
 | Comandas impresas en cocina | ✅ Construido | Sale en papel de 80 mm con el diseño del ticket, o por el agente de impresión de la empresa; también se comparte por WhatsApp. Requiere el agente de impresión instalado en el local |
 | Propina voluntaria | ✅ Construido | Sugerida al cobrar según la caja, la decide el cliente, queda aparte de la factura, sale en el ticket y se contabiliza como dinero de terceros. Aún no viaja en la factura electrónica ni en el reporte de caja (pendiente urgente) |
 | Domicilios | ❌ No incluido | El módulo atiende **mesa**. Existen los tipos de pedido «Mostrador» y «Mensajería», pero no hay flujo de domicilio (ruta, repartidor, dirección). El plan lo dejó fuera de alcance. No prometerlo en la demo: si lo piden, decir que se evalúa |
