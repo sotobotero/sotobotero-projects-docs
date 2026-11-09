@@ -49,7 +49,7 @@ flowchart LR
     classDef aviso fill:#fef9c3,stroke:#ca8a04,color:#0f172a
 ```
 
-🔵 sala · 🟠 cocina · 🟢 caja · 🟣 inventario y catálogo. Cada escena dura 2 a 3 minutos. Si hay poco tiempo: 2, 3, 4, 5, 6 y 10.
+🔵 sala · 🟠 cocina · 🟢 caja · 🟣 inventario y catálogo. Cada escena dura 2 a 3 minutos. Si hay poco tiempo: 2, 3, 4, 5, 6 y 10. La 12 solo si preguntan cómo se configura.
 
 ## Preparar la empresa de la demo
 
@@ -91,7 +91,7 @@ flowchart LR
 | 1. Solicitud (el formulario) | <https://ada.sotobotero.com/empezar> | El cliente o quien hace la demo |
 | 3. Aprobar y aprovisionar | <https://ada.sotobotero.com/platform-admin> | Quien administra la plataforma (`root`) |
 | El negocio ya aprovisionado | <https://ada.sotobotero.com/> y, para facturación y caja, <https://ada.sotobotero.com/ADA_ENTERPISE_CORE/> | El dueño, con el usuario del negocio |
-| Marketplace público del negocio | `https://<subdominio>.sotobotero.com`, el que se pidió en el formulario (ejemplos hoy: `hugos-joyeria.sotobotero.com`, `ayf.sotobotero.com`) | El público |
+| Marketplace público del negocio | `https://<subdominio>.sotobotero.com`, el que se pidió en el formulario (por ejemplo `sabor-de-casa.sotobotero.com`) | El público |
 | Administrar el marketplace (portal de proveedora) | <https://ada.sotobotero.com/>, menú del negocio | El dueño |
 
 Para ensayar sin tocar producción, el mismo recorrido existe en `https://stg-ada.sotobotero.com/empezar`.
@@ -311,6 +311,85 @@ no al venderse. Detalle y pasos largos: [compras y cuentas por pagar](e2e-compra
 
 *Mensaje:* facturación electrónica, causaciones, pagos a proveedores y egresos son los mismos de cualquier negocio; el restaurante
 no necesita otro sistema para eso.
+
+## 12. Cómo se arma un plato (para enseñarlo o prepararlo desde cero)
+
+En la empresa de la demo los platos **ya vienen armados** (semilla de producción): basta con abrir las pantallas y mostrarlas. Esta
+sección es para quien quiere crearlos a mano, o para responder «¿y esto cómo lo configuro yo?». Hay dos formas, y se escoge según
+cómo se cocina el plato:
+
+| Si el plato… | Se arma con | Cuándo baja el inventario | Ejemplos de la demo |
+|---|---|---|---|
+| Se prepara **por tandas** antes del servicio | **Orden de producción** | Al cerrar la orden: bajan los insumos y suben las porciones listas | Arroz con pollo, Bandeja paisa, Ajiaco, Limonada, Salsa de la casa |
+| Se arma **al momento** con ingredientes sueltos | **Producto compuesto** (receta) | Al vender: bajan los ingredientes de la receta | Ensalada de la casa, Plato combinado |
+
+Las dos viven en ADA, menú *Inventario*, y antes hace falta que el plato exista como producto (en la carta: *Configurar → Platos*, o
+*Inventario → Productos*) y que los insumos tengan existencias (una compra, escena 10).
+
+### Por tandas: *Inventario → Ordenes de producción*
+
+| Hacer | Se ve |
+|---|---|
+| Entrar y pulsar *Gestionar orden de producción* | Pantalla de la orden |
+| Elegir el **producto** (el plato o la salsa), el **lote**, la **ubicación** y la **fecha de caducidad** | La orden queda ligada a ese producto |
+| Poner las unidades a producir (por ejemplo 20 porciones) y, con *Agregar*, cada insumo con su **cantidad** y su unidad (150 g de arroz, 0,2 kg de pollo…) | Se calcula el **costo total de materiales** y el costo de cada porción |
+| *Guardar plantilla* | La receta queda para repetirla otro día |
+| *Iniciar procesamiento* | La orden se cierra: **bajan los insumos** en el kardex y **suben las porciones** del plato |
+| Otro día: *Crear desde plantilla* | La misma receta, lista para ajustar las unidades |
+
+*Mensaje:* se cocina una vez para la tanda y el sistema ya sabe cuánto costó cada porción. Orden de trabajo: primero los preparados
+(la salsa), luego los platos que los usan.
+
+### Al momento: *Inventario → Productos compuestos*
+
+| Hacer | Se ve |
+|---|---|
+| Crear uno nuevo y elegir el **producto compuesto** (el plato) | El plato debe tener existencias en 0 |
+| **Código (opcional)**: dejarlo vacío | Se genera solo |
+| **Rendimiento**: cuántas unidades del plato hacen las cantidades de abajo (normalmente 1) | Las cantidades se dividen por ese número |
+| *Agregar* cada componente con su **cantidad** y su unidad (arroz 150 g, pollo 0,2 kg, papa criolla 0,15 kg…) | Se calcula el costo del plato |
+| Un componente puede ser **otro producto compuesto** (la ensalada dentro del combinado), hasta seis niveles | Sale la receta a varios niveles |
+| Un componente que **tiene existencias propias** (la salsa, producida por lotes) | La receta se corta ahí y se descuenta la salsa por su stock |
+| Marcar **Descuenta por receta al vender** y guardar | Solo deja marcar si hay al menos un componente y el plato tiene stock 0; si no, explica el motivo |
+
+*Mensaje:* es lo que pidió el cliente: el plato sabe qué gasta, y cada hamburguesa o combinado que se vende descuenta sus ingredientes
+sin que nadie lo digite, ni en la mesa, ni por mostrador, ni en un pedido a domicilio que entre como venta de mostrador.
+
+> ⚠️ La marca se edita solo desde esta pantalla; en la ficha del producto aparece de solo lectura. Si un ingrediente cambia de precio
+> después, las ventas que ya se hicieron conservan la receta con la que se vendieron.
+
+## 13. Ejemplo completo: de la receta al kardex
+
+Un solo plato recorrido de punta a punta con los insumos que ya trae la semilla, para ensayarlo y para contarlo. Es el mismo plan de la
+escena 7 pero **armado por nosotros**, así se ve cómo se conecta todo.
+
+**El plato:** *Pechuga a la plancha con papa criolla*, $27.000. Receta para 1 plato (rendimiento 1):
+
+| Componente | Cantidad | Viene de |
+|---|---|---|
+| Pechuga de pollo | 0,2 kg | Insumo con existencias (semilla) |
+| Papa criolla | 200 g | Insumo con existencias (semilla) |
+| Tomate chonto | 50 g | Insumo con existencias (semilla) |
+| Salsa de la casa | 30 ml | Preparado **con stock propio**: la receta se corta aquí y baja la salsa |
+
+| # | Dónde | Hacer | Se ve |
+|---|---|---|---|
+| 1 | *Inventario → Kardex* (ADA) | Anotar la existencia de pechuga, papa criolla, tomate y salsa | Punto de partida |
+| 2 | *Configurar → Platos* (Arcadia) | Crear el plato: nombre, grupo **Platos y bebidas de la carta**, precio $27.000 y foto | Ya sale como tarjeta. Es la **publicación**: el grupo está encendido en la carta (por sede y por mesa se ve en *Configurar → Carta*) |
+| 3 | *Inventario → Productos compuestos* (ADA) | Armar la receta de arriba y marcar *Descuenta por receta al vender* | Guarda: tiene componentes y el plato está en stock 0 |
+| 4 | *Mesas* (celular) | Abrir una mesa, escribir `pec` | Aparece el plato en la búsqueda, y en «más pedidos» cuando se vende |
+| 5 | Mismo pedido | Pedir **2** platos y *Enviar a cocina* | Ronda Pendiente |
+| 6 | *Cocina* | Empezar y terminar los 2 platos | El mesero los ve **Listos**; los sirve |
+| 7 | *Cuenta y cobro* | Cobrar con ticket | Mesa libre. El ticket dice el plato, no los ingredientes |
+| 8 | *Inventario → Kardex* | Mirar los cuatro insumos | Pechuga **−0,4 kg**, papa criolla **−0,4 kg**, tomate **−100 g**, salsa **−60 ml**. Sin digitar nada |
+| 9 | *Reporte de caja* | Revisar el día | $54.000 cobrados por el medio de pago elegido |
+
+*Si el kardex no baja:* confirmar que el plato tiene la marca, que su existencia es 0 y que la venta se cerró (no un borrador). Si baja el
+plato en vez de los ingredientes, el plato tiene existencias: la marca exige stock 0.
+
+**Reserva.** El cliente reserva desde el marketplace y entra al **mismo pedido** (queda «reservada» hasta que llega). En la demo hoy
+**no se puede mostrar** porque falta cargar el servicio «Reserva» (un producto de tipo servicio con empleado y turno, ver la cabecera de
+`demo-restaurante.sql`). Si el cliente la pide, decirlo con esa claridad.
 
 ## Estado de cada tema
 
