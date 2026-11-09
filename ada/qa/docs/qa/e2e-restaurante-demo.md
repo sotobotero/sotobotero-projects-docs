@@ -40,6 +40,8 @@ flowchart LR
     F --> G["🥗 7. Plato<br/>compuesto"]:::stock
     G --> H["🏷️ 8. Prefabricados"]:::stock
     H --> I["💰 9. Caja<br/>y reportes"]:::caja
+    I --> J["🛒 10. Proveedor<br/>y materia prima"]:::stock
+    J --> K["📒 11. Lo financiero"]:::caja
     classDef sala fill:#dbeafe,stroke:#2563eb,color:#0f172a
     classDef cocina fill:#ffedd5,stroke:#ea580c,color:#0f172a
     classDef caja fill:#dcfce7,stroke:#16a34a,color:#0f172a
@@ -47,7 +49,82 @@ flowchart LR
     classDef aviso fill:#fef9c3,stroke:#ca8a04,color:#0f172a
 ```
 
-🔵 sala · 🟠 cocina · 🟢 caja · 🟣 inventario y catálogo. Cada escena dura 2 a 3 minutos. Si hay poco tiempo: 2, 3, 4, 5 y 6.
+🔵 sala · 🟠 cocina · 🟢 caja · 🟣 inventario y catálogo. Cada escena dura 2 a 3 minutos. Si hay poco tiempo: 2, 3, 4, 5, 6 y 10.
+
+## Preparar la empresa de la demo
+
+La demo parte de cero, desde el formulario público de alta de Arcadia, como lo haría el cliente. El formulario **solo crea la
+solicitud**: la empresa existe cuando quien administra la plataforma la aprueba y se aprovisiona.
+
+```mermaid
+flowchart LR
+    F["📝 1. Formulario<br/>de alta"]:::sala --> S["📨 2. Solicitud<br/>en revisión"]:::aviso
+    S --> A["✅ 3. Administrador<br/>aprueba y aprovisiona"]:::caja
+    A --> M["🍽️ 4. Módulo restaurante<br/>y plan sembrados"]:::cocina
+    M --> D["🥘 5. Datos de la demo<br/>(2 semillas)"]:::stock
+    D --> U["👤 6. Usuarios<br/>Mesero y Cocina"]:::sala
+    classDef sala fill:#dbeafe,stroke:#2563eb,color:#0f172a
+    classDef cocina fill:#ffedd5,stroke:#ea580c,color:#0f172a
+    classDef caja fill:#dcfce7,stroke:#16a34a,color:#0f172a
+    classDef stock fill:#ede9fe,stroke:#7c3aed,color:#0f172a
+    classDef aviso fill:#fef9c3,stroke:#ca8a04,color:#0f172a
+```
+
+**Datos para copiar y pegar en el formulario** (ficticios, no son de un negocio real):
+
+| Campo | Valor |
+|---|---|
+| Nombre del negocio | Sabor de Casa Restaurante S.A.S. |
+| País | Colombia |
+| NIT | 900333002-1 |
+| Nombre de contacto | Camila Restrepo |
+| Correo | un correo propio que se pueda leer (ahí llega el aviso) |
+| Teléfono | 3001234567 |
+| Plan | **Restaurante** |
+| Marketplace | Sí, con el subdominio `sabor-de-casa` |
+| Asientos extra | 0 |
+
+**Dónde se hace cada paso:**
+
+| Paso | Dirección | Quién |
+|---|---|---|
+| 1. Solicitud (el formulario) | <https://ada.sotobotero.com/empezar> | El cliente o quien hace la demo |
+| 3. Aprobar y aprovisionar | <https://ada.sotobotero.com/platform-admin> | Quien administra la plataforma (`root`) |
+| El negocio ya aprovisionado | <https://ada.sotobotero.com/> y, para facturación y caja, <https://ada.sotobotero.com/ADA_ENTERPISE_CORE/> | El dueño, con el usuario del negocio |
+| Marketplace público del negocio | `https://<subdominio>.sotobotero.com`, el que se pidió en el formulario (ejemplos hoy: `hugos-joyeria.sotobotero.com`, `ayf.sotobotero.com`) | El público |
+| Administrar el marketplace (portal de proveedora) | <https://ada.sotobotero.com/>, menú del negocio | El dueño |
+
+Para ensayar sin tocar producción, el mismo recorrido existe en `https://stg-ada.sotobotero.com/empezar`.
+
+En el formulario, marcar **Marketplace** y pedir un subdominio (por ejemplo `sabor-de-casa`). El plan **Restaurante** ya sale entre los
+planes base, hoy con precio **$0** (marcador hasta confirmar el precio). El marketplace no va dentro del plan: se marca aparte, como en
+cualquier otro plan. **El subdominio no se crea solo**: no hay comodín `*.sotobotero.com`, así que quien administra debe registrar el
+host (`hosts`) y el DNS al aprobar; sin eso el marketplace del negocio no abre por su dirección.
+
+**Después de aprovisionar**, quien administra aplica al tenant nuevo, en este orden (cada archivo trae su comando en la cabecera):
+
+| Orden | Archivo | Deja |
+|---|---|---|
+| 1 | `db/seed/demo/demo-restaurante.sql` | 8 mesas (Mesa 1 a 7 y Terraza 1) y horario de 11:00 a 22:00 |
+| 2 | `db/seed/demo/demo-restaurante-produccion.sql` | 8 insumos con existencias, salsa, aderezo y 6 platos con precio, y un proveedor de plaza de mercado |
+
+**La carta de la demo** (precios en la lista «Todo público»):
+
+| Plato | Precio | Cómo descuenta |
+|---|---|---|
+| Arroz con pollo | $24.000 | Por producción: ya hay 20 porciones listas |
+| Bandeja paisa reducida | $32.000 | Por producción: 15 porciones |
+| Ajiaco santafereño | $26.000 | Por producción: 15 porciones |
+| Limonada de la casa | $8.000 | Por producción: 30 vasos |
+| Ensalada de la casa | $14.000 | **Por receta al vender**: tomate, cebolla, limón, aderezo y salsa |
+| Plato combinado de la casa | $28.000 | **Por receta al vender**: arroz 150 g, pollo 0,2 kg, papa criolla 0,15 kg y una ensalada |
+
+Los usuarios **Mesero** y **Cocina** se crean desde la pantalla de usuarios de ADA (la clave vive en Keycloak, no en una semilla):
+
+| Usuario | Rol | Nombre |
+|---|---|---|
+| Mesero | Mesero | Andrés Mejía |
+| Cocina | Cocina | Luz Marina Gómez |
 
 ## Antes de la demo
 
@@ -168,7 +245,7 @@ flowchart TB
 
 ## 7. Plato compuesto
 
-> ⚠️ Mostrar solo cuando esté desplegado y validado. Ver el plan, sección 8.
+> ⚠️ Mostrar solo si la víspera se comprobó en el negocio de la demo. Ver el plan, sección 8.
 
 ```mermaid
 flowchart TB
@@ -208,6 +285,33 @@ flowchart TB
 | *Reporte de caja* del día | Lo cobrado por medio de pago |
 | Cartera, cuentas por pagar y contabilidad | Se muestran solo si el cliente contrata esos módulos |
 
+## 10. Del proveedor a la cocina (materia prima)
+
+Lo que más pesa en un restaurante: comprar materia prima, y que cada plato la gaste según su receta.
+
+| Hacer | Se ve |
+|---|---|
+| *Inventario → Compras*: comprar 10 kg de papa criolla a *Plaza de mercado y distribuidores DEMO*, a crédito | Sube la existencia de papa criolla y queda una cuenta por pagar |
+| Anotar la existencia de **papa criolla** en el kardex | Punto de partida: 15 kg menos lo que ya gastó la producción |
+| Vender 1 **Plato combinado** (escena 3 a 5) | El kardex baja 150 g de papa criolla, 150 g de arroz y 0,2 kg de pollo, más lo de la ensalada. Nadie lo digita |
+| *Inventario → Cuentas por pagar*: abonar al proveedor | El saldo baja y el pago entra en el reporte de caja |
+
+*Mensaje:* cada plato sabe qué gasta; el inventario y el costo se mueven solos, y lo que se le debe al proveedor está al día.
+Los platos que se preparan por tandas (arroz con pollo, bandeja, ajiaco, limonada) descuentan al cerrar la **orden de producción**,
+no al venderse. Detalle y pasos largos: [compras y cuentas por pagar](e2e-compras-cuentas-por-pagar.md).
+
+## 11. Lo financiero de siempre
+
+| Hacer | Se ve |
+|---|---|
+| Factura electrónica de la mesa (escena 5) | Documento DIAN a nombre del cliente |
+| *Reporte de caja* | Lo cobrado por medio de pago y la propina aparte |
+| Compra a crédito y su abono (escena 10) | Cuenta por pagar y egreso de caja |
+| *Contabilidad* | Los asientos de ventas y compras salen de cada operación (causación); los que no tienen período abierto quedan en *Pendientes de contabilizar* |
+
+*Mensaje:* facturación electrónica, causaciones, pagos a proveedores y egresos son los mismos de cualquier negocio; el restaurante
+no necesita otro sistema para eso.
+
 ## Estado de cada tema
 
 | Tema | Estado | Cómo decirlo al cliente |
@@ -215,9 +319,10 @@ flowchart TB
 | Mesas, pedido, cocina, cobro, carta por sede y mesa | ✅ Listo y probado | Se muestra completo |
 | Fotos de los platos | ✅ Listo | Requiere el almacenamiento de imágenes activo en el servidor |
 | Reservas por internet | ✅ Construido | El cliente reserva desde el marketplace y entra al mismo pedido. Se contrata como extensión (planes del marketplace). En la demo falta cargar el servicio «Reserva» |
-| Descuento por receta (plato compuesto) | 🟡 En construcción | Se muestra cuando esté validado. Los demás platos bajan sus ingredientes al cerrar una orden de producción |
+| Descuento por receta (plato compuesto) | 🟡 Validar antes de la demo | Ensalada y Plato combinado descuentan al vender (migración 214 aplicada). Hacer la escena 10 completa en el negocio de la demo la víspera; si no cuadra, mostrar la receta y el kardex de la producción. Los demás platos bajan sus ingredientes al cerrar una orden de producción |
 | Comandas impresas en cocina | ✅ Construido | Sale en papel de 80 mm con el diseño del ticket, o por el agente de impresión de la empresa; también se comparte por WhatsApp. Requiere el agente de impresión instalado en el local |
 | Propina voluntaria | ✅ Construido | Sugerida al cobrar según la caja, la decide el cliente, queda aparte de la factura, sale en el ticket y se contabiliza como dinero de terceros. Aún no viaja en la factura electrónica ni en el reporte de caja (pendiente urgente) |
+| Domicilios | ❌ No incluido | El módulo atiende **mesa**. Existen los tipos de pedido «Mostrador» y «Mensajería», pero no hay flujo de domicilio (ruta, repartidor, dirección). El plan lo dejó fuera de alcance. No prometerlo en la demo: si lo piden, decir que se evalúa |
 | Fecha de entrega | 🟡 Sin fecha | El módulo está probado en local y no desplegado. No comprometer fecha hasta probar con un restaurante real |
 
 *Comanda* es el papel que sale impreso en la cocina cuando el mesero envía el pedido.
