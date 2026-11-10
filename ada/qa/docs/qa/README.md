@@ -17,6 +17,7 @@ validación humana de que todo cuadra junto.
 | 5 | **Ciclo completo** | Compra → venta → separado → fiado → cartera → pago y devolución al proveedor, y conciliación de inventario, caja, cartera y cuentas por pagar | [e2e-ciclo-completo.md](e2e-ciclo-completo.md) |
 | 6 | Gimnasio (reservas y membresías) | Caso de uso de un gimnasio de punta a punta | [e2e-gym-manual-tests.md](e2e-gym-manual-tests.md) |
 | 7 | Restaurante (demo al cliente) | Carta, mesa, pedido, cocina, cobro, kardex, plato compuesto, prefabricados, materia prima y lo financiero. Incluye cómo preparar la empresa de la demo con datos para copiar. Guion de apoyo para presentar, no guía de pruebas | [e2e-restaurante-demo.md](e2e-restaurante-demo.md) |
+| 8 | Ciclo del negocio (guía + videos) | Guía en lenguaje llano, para dejarle al dueño, del ciclo completo: producto **o servicio** y cliente primero, factura de contado o crédito, separados con anticipo, abonos, cobro de cartera y cierre del día. Incluye el guion de **cuatro videos cortos** escena por escena. Más diagramas que texto | [guia-ciclo-del-negocio.md](guia-ciclo-del-negocio.md) |
 
 Documentos de apoyo (para quien prepara datos, no para probar):
 
