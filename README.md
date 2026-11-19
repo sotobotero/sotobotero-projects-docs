@@ -34,7 +34,7 @@ Las guías están escritas para el equipo del negocio: sin jerga y con el recorr
 
 | Documento | Tema |
 |---|---|
-| [Arquitectura de microfrontends](ada/frontend/frontend/MICROFRONTEND-CONFIG-ARCHITECTURE.md) | Module Federation, rutas entre shells y configuración |
+| [Arquitectura de microfrontends](ada/frontend/MICROFRONTEND-CONFIG-ARCHITECTURE.md) | Module Federation, rutas entre shells y configuración |
 
 ## Lo que no está aquí
 
@@ -50,7 +50,7 @@ salvo este `README.md`.
 ```
 ADA_ENTERPISE_CORE/docs/qa/                     ──────► ada/qa/
 arcadia/infraestructuradomain/print-agent/      ──────► ada/infraesturadomain/print-agent/latest/
-arcadia/frontend/MICROFRONTEND-CONFIG-ARCHITECTURE.md ─► ada/frontend/frontend/
+arcadia/docs/MICROFRONTEND-CONFIG-ARCHITECTURE.md     ─► ada/frontend/
 arcadia/infraestructuradomain/print-agent/README.md  ─► ada/infraesturadomain/print-agent/
 ```
 
