@@ -95,7 +95,7 @@ Se reporta con estos seis datos y con eso el fallo se encuentra:
 |---|---|---|
 | **Ciclo del negocio** | un día completo en lenguaje llano, con cuatro videos cortos | [guia-ciclo-del-negocio.md](guia-ciclo-del-negocio.md) |
 | **Cargas de archivo** | plantillas, productos con solo el nombre, filas rechazadas que se corrigen | [e2e-cargas-archivo-demo.md](e2e-cargas-archivo-demo.md) |
-| **Restaurante** (histórico) | la historia escena por escena; se conserva como evidencia | [legacy/e2e-restaurante-demo.md](../legacy/e2e-restaurante-demo.md) |
+| **Restaurante** (histórico) | la historia escena por escena; se conserva como evidencia | legacy/e2e-restaurante-demo.md (interno: `docs/legacy/e2e-restaurante-demo.md`) |
 
 </details>
 

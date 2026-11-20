@@ -2,7 +2,7 @@
 
 Cubre compras de contado, a crédito y mixtas, abonos a proveedores y su reverso, el cupo de crédito, la devolución al
 proveedor y el cierre del saldo a favor (reembolso o cruce). Antes: [README de QA](README.md). Funcionamiento y reglas:
-[ACCOUNTS_PAYABLE.md](../ACCOUNTS_PAYABLE.md).
+`docs/ACCOUNTS_PAYABLE.md`.
 
 ```mermaid
 flowchart LR

@@ -3,7 +3,7 @@
 > **Se carga vendiendo.** El inventario no se digita antes de abrir: cada venta deja el producto registrado, y lo que más
 > rota entra primero. La operación nunca se detiene.
 
-Contexto del módulo: [cómo se mueve el inventario](../INVENTORY_MODULE.md). Cómo se cuenta lo que hay:
+Contexto del módulo: cómo se mueve el inventario (interno: `docs/INVENTORY_MODULE.md`). Cómo se cuenta lo que hay:
 [cómo se cuenta el inventario](e2e-conteo-de-inventario.md). Acceso y direcciones: [00-acceso.md](00-acceso.md).
 
 ## 🎯 Qué hay que lograr
@@ -125,7 +125,7 @@ desde el primer día.
 2. Si no trae, se usa el código interno que genera el sistema.
 3. Se imprimen las etiquetas antes de colgar la prenda.
 4. La cantidad recibida se registra como entrada de inventario
-   ([albarán de entrada](../INVENTORY_MODULE.md)) y queda con su costo y su cuenta por pagar.
+   (albarán de entrada (interno: `docs/INVENTORY_MODULE.md`)) y queda con su costo y su cuenta por pagar.
 
 </details>
 

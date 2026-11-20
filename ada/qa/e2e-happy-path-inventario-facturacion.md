@@ -25,7 +25,7 @@ Antes de ejecutar este E2E, confirmar en Company Profile:
 - Tipo de inventario (`priodicalinventory`): periodico o permanente.
 - Metodo de costo (`costing_method`): 1 promedio ponderado, 2 costo maximo, 3 costo minimo.
 
-Referencia funcional: [Reglas de costo (resumen)](../INVENTORY_MODULE.md#reglas-de-costo-resumen) en [docs/INVENTORY_MODULE.md](../INVENTORY_MODULE.md).
+Referencia funcional: Reglas de costo (resumen) (interno: `docs/INVENTORY_MODULE.md`, sección "reglas de costo resumen") en docs/INVENTORY_MODULE.md (interno: `docs/INVENTORY_MODULE.md`).
 
 ---
 

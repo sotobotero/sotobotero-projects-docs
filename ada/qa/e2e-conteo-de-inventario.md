@@ -4,7 +4,7 @@
 > diferencia. El documento que genera se sigue llamando **ajuste de inventario (NTINV)** en listados, kardex y
 > contabilidad: el menú dice lo que hace el operador, el documento qué es contablemente.
 
-Contexto del módulo: [cómo se mueve el inventario](../INVENTORY_MODULE.md). Acceso y direcciones:
+Contexto del módulo: cómo se mueve el inventario (interno: `docs/INVENTORY_MODULE.md`). Acceso y direcciones:
 [00-acceso.md](00-acceso.md).
 
 ## 🧮 La regla única

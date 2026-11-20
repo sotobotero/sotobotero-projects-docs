@@ -42,7 +42,7 @@ Tres cosas, y sin las tres no hay servicio:
   aparece en el celular del mesero. Detalle: [qué se publica](restaurante-configuracion.md).
 - **Fotos y precios.** Cada plato es una tarjeta con foto, precio y grupo. Sin foto se vende peor y el mesero duda.
 - **Recetas.** Qué gasta cada plato. Es lo que hace que el inventario baje solo: los tres caminos están abajo, y el
-  detalle en [cómo se arma un plato](../RECIPES_AND_PRODUCTION.md).
+  detalle en cómo se arma un plato (interno: `docs/RECIPES_AND_PRODUCTION.md`).
 - Y **una caja abierta** antes del primer cobro.
 
 ## 🪑 Durante el servicio: lo que hace el mesero
@@ -146,10 +146,10 @@ flowchart TB
   niveles (una ensalada dentro de un combinado). Ejemplos: ensalada, plato combinado.
 - **Camino 3 — sin receta.** La bebida o el paquete que se vende tal cual, con su propio stock: baja una unidad.
 
-Ver el paso a paso de los caminos 1 y 2: [cómo se arma un plato y cuándo baja el inventario](../RECIPES_AND_PRODUCTION.md).
+Ver el paso a paso de los caminos 1 y 2: cómo se arma un plato y cuándo baja el inventario (interno: `docs/RECIPES_AND_PRODUCTION.md`).
 
 Un plato con **stock propio** corta la receta ahí: si ya hay porciones hechas, se descuenta la porción, no los
-ingredientes. El ejemplo completo, paso a paso, en [de la receta al kardex](../RECIPES_AND_PRODUCTION.md).
+ingredientes. El ejemplo completo, paso a paso, en de la receta al kardex (interno: `docs/RECIPES_AND_PRODUCTION.md`).
 
 ## 📦 Lo que queda hecho sin que nadie lo digite
 

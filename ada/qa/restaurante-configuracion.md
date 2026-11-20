@@ -43,7 +43,7 @@ Cada plato es una **tarjeta**: nombre, grupo, precio y foto.
 
 - La foto no es adorno: el mesero reconoce el plato y el cliente elige sin preguntar.
 - Las fotos necesitan el almacenamiento de imágenes activo en el servidor; si no, la tarjeta sale sin imagen.
-- El plato es un producto con carta: las otras puertas para crearlo están en [dónde se crea un producto](../PRODUCT_AND_SERVICE_ENTRY_POINTS.md).
+- El plato es un producto con carta: las otras puertas para crearlo están en dónde se crea un producto (interno: `docs/PRODUCT_AND_SERVICE_ENTRY_POINTS.md`).
 
 ## 👤 Las personas y la caja
 
@@ -58,7 +58,7 @@ Y **una caja abierta** antes del primer cobro: sin caja el cobro no se puede cer
 ## 🧮 Para que el inventario baje solo
 
 Falta una decisión de cocina, no de configuración: **cómo se prepara cada plato** y, con eso, cuándo se descuenta el
-inventario. Está explicado en [cómo se arma un plato](../RECIPES_AND_PRODUCTION.md), con los tres caminos y el
+inventario. Está explicado en cómo se arma un plato (interno: `docs/RECIPES_AND_PRODUCTION.md`), con los tres caminos y el
 ejemplo de punta a punta.
 
 Cuando ya esté montado, el día a día es la otra guía: [cómo atender el salón](guia-restaurante.md).

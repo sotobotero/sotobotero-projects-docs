@@ -753,7 +753,7 @@ detallado de cada pantalla está en los flujos de QA.
 
 | Escena de la guía | Pantalla | Paso a paso documentado | Estado |
 |---|---|---|---|
-| Crear un producto o un servicio | *Inventario → Productos* (nuevo) | [INVENTORY_MODULE.md](../INVENTORY_MODULE.md), "Registrar producto" | ✅ |
+| Crear un producto o un servicio | *Inventario → Productos* (nuevo) | `docs/INVENTORY_MODULE.md`, "Registrar producto" | ✅ |
 | Crear cliente y cupo de crédito | *Facturación → Clientes* (nuevo / editar) | [e2e-cartera-separados.md](e2e-cartera-separados.md), 3.4 y 3.5 | ✅ |
 | Factura de contado | *Facturación → Facturas → Crear*, medio con plazo 0 | [e2e-happy-path-inventario-facturacion.md](e2e-happy-path-inventario-facturacion.md) | ✅ |
 | Factura a crédito o parte y parte | la misma pantalla, medio de pago con plazo mayor que 0 | [e2e-cartera-separados.md](e2e-cartera-separados.md), 3.1 | ✅ |
