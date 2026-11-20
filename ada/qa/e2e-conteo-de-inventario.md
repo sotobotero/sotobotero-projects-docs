@@ -25,8 +25,8 @@ flowchart LR
 
     E --> T --> R --> K
 
-    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:15px,font-weight:600
-    classDef sistema fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95,font-size:13px
+    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
+    classDef sistema fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95
 ```
 
 En el **albarán de entrada y de salida** hay una casilla marcada por defecto, *"Confirmar el albarán y mover inventario"*:
@@ -54,8 +54,8 @@ flowchart TB
     C --> C2
     D --> D2
 
-    classDef contexto fill:#f5f8ff,stroke:#c3d4f0,stroke-width:1px,color:#1e3a8a,font-size:13px
-    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:13px,font-weight:600
+    classDef contexto fill:#f5f8ff,stroke:#c3d4f0,stroke-width:1px,color:#1e3a8a
+    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
 ```
 
 El conteo **no reemplaza** la facturación: escondería la venta y descuadraría la contabilidad.

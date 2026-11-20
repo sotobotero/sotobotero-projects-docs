@@ -21,16 +21,16 @@ de diferencias y desanima al equipo.
 ---
 title: Qué pasa cuando llega un cliente con una prenda
 ---
-flowchart TB
+flowchart LR
     C["🛍️ Llega un cliente<br/>con una prenda en la mano"]:::contexto
-    E["✅ Ya está en el sistema:<br/>se escanea y se vende"]:::paso
-    N["📝 No está: se crea en caja<br/>nombre · precio · talla, y se vende"]:::paso
+    E["✅ **Ya está en el sistema**<br/>se escanea y se vende"]:::paso
+    N["📝 **No está: se crea**<br/>nombre · precio · talla"]:::paso
 
-    C -->|"se busca o se escanea"| E
+    C -->|"se busca"| E
     C -->|"no aparece"| N
 
-    classDef contexto fill:#f5f8ff,stroke:#c3d4f0,stroke-width:1px,color:#1e3a8a,font-size:13px
-    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:14px,font-weight:600
+    classDef contexto fill:#f5f8ff,stroke:#c3d4f0,stroke-width:1px,color:#1e3a8a
+    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
 ```
 
 Así los productos más vendidos quedan en el sistema primero, y los que nunca se venden no generan digitación.
@@ -93,8 +93,8 @@ flowchart LR
 
     E --> B --> L --> F
 
-    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:15px,font-weight:600
-    classDef sistema fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95,font-size:13px
+    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
+    classDef sistema fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95
 ```
 
 ## 📊 Por qué importa cada campo

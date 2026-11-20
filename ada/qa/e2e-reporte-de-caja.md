@@ -15,7 +15,7 @@ flowchart LR
     A["📊 1. Reporte de hoy<br/>totales anotados"]:::paso --> B["🧾 2. Se corren<br/>los flujos"]:::paso
     B --> C["🔁 3. Reporte otra vez<br/>fila por fila"]:::paso
     C --> D["🔒 4. Cierre de caja<br/>del día"]:::paso
-    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:15px,font-weight:600
+    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
 ```
 
 ## 🧭 De dónde puede venir un movimiento

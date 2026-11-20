@@ -40,9 +40,9 @@ flowchart LR
     Q -->|"cuadro las cuentas"| K
     Q -->|"miro los números"| S
 
-    classDef camino fill:#f5f8ff,stroke:#c3d4f0,stroke-width:1px,color:#1e3a8a,font-size:13px
-    classDef acceso fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95,font-size:14px,font-weight:600
-    classDef app fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:15px,font-weight:600
+    classDef camino fill:#f5f8ff,stroke:#c3d4f0,stroke-width:1px,color:#1e3a8a
+    classDef acceso fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95
+    classDef app fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
 
     click B "https://ada.sotobotero.com/"
     click M "https://ada.sotobotero.com/" "Abrir Pulso Mobile"
@@ -81,8 +81,8 @@ flowchart TB
     B2 --> R4
     C1 --> R5
 
-    classDef fallo fill:#fff8f1,stroke:#f3c9a0,stroke-width:1px,color:#8a4b16,font-size:13px,font-weight:600
-    classDef arreglo fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:15px
+    classDef fallo fill:#fff8f1,stroke:#f3c9a0,stroke-width:1px,color:#8a4b16
+    classDef arreglo fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
 
     click R1 "https://sso.sotobotero.com" "Abrir la pantalla de acceso"
 ```

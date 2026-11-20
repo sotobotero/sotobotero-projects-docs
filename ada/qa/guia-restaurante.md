@@ -23,9 +23,9 @@ flowchart LR
 
     M --> A --> C --> Q
 
-    classDef monta fill:#f5f8ff,stroke:#c3d4f0,stroke-width:1px,color:#1e3a8a,font-size:14px
-    classDef atiende fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:15px,font-weight:600
-    classDef sistema fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95,font-size:13px
+    classDef monta fill:#f5f8ff,stroke:#c3d4f0,stroke-width:1px,color:#1e3a8a
+    classDef atiende fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
+    classDef sistema fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95
 
     click M "restaurante-configuracion.md" "Ver cómo se monta"
     click A "restaurante-configuracion.md" "Quién hace cada cosa"
@@ -68,8 +68,8 @@ flowchart LR
 
     W --> L --> S --> O
 
-    classDef web fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95,font-size:13px
-    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:15px,font-weight:600
+    classDef web fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95
+    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
 ```
 
 - La lista muestra **quién reservó, a qué hora y cuántos comensales**. Sin fecha se ven todas las de hoy en adelante; con
@@ -94,9 +94,9 @@ flowchart LR
     P -.->|"con motivo"| X(["❌ Cancelado"]):::malo
     R -.->|"con motivo"| X
 
-    classDef encurso fill:#fff8f1,stroke:#f3c9a0,stroke-width:1px,color:#8a4b16,font-size:14px,font-weight:600
-    classDef listo fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:14px,font-weight:600
-    classDef malo fill:#fdf4f4,stroke:#e7b3b3,stroke-width:1px,color:#7f1d1d,font-size:13px
+    classDef encurso fill:#fff8f1,stroke:#f3c9a0,stroke-width:1px,color:#8a4b16
+    classDef listo fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
+    classDef malo fill:#fdf4f4,stroke:#e7b3b3,stroke-width:1px,color:#7f1d1d
 ```
 
 La cocina ve solo lo que le toca, en el orden en que llegó. El salón se entera **sin gritar**: el mesero ve el plato
@@ -133,8 +133,8 @@ flowchart TB
     T2 --> R2
     T3 --> R3
 
-    classDef prep fill:#fff8f1,stroke:#f3c9a0,stroke-width:1px,color:#8a4b16,font-size:13px,font-weight:600
-    classDef camino fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:15px
+    classDef prep fill:#fff8f1,stroke:#f3c9a0,stroke-width:1px,color:#8a4b16
+    classDef camino fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
 
     click R1 "../RECIPES_AND_PRODUCTION.md" "Cómo se arma por tandas"
     click R2 "../RECIPES_AND_PRODUCTION.md" "Cómo se arma la receta"

@@ -20,7 +20,7 @@ flowchart LR
 
     A --> B --> C --> D
 
-    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b,font-size:15px,font-weight:600
+    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
 ```
 
 ## 🪑 Las mesas
