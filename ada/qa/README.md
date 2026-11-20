@@ -102,13 +102,12 @@ Se reporta con estos seis datos y con eso el fallo se encuentra:
 ## Para preparar un negocio desde cero
 
 <details>
-<summary><strong>Guías de arranque y de datos de prueba</strong></summary>
+<summary><strong>Guías de arranque</strong></summary>
 
 | Guía | Para qué |
 |---|---|
 | [INVENTORY_ONBOARDING_STRATEGY.md](INVENTORY_ONBOARDING_STRATEGY.md) | cargar el inventario de un negocio que abre sin sistema |
 | [guia-ciclo-del-negocio.md](guia-ciclo-del-negocio.md) | el día del negocio completo, para el dueño |
-| [PLAN_SEED_LOTES_Y_PERFORMANCE.md](PLAN_SEED_LOTES_Y_PERFORMANCE.md) · [SEED_LOTES_RUNBOOK.md](SEED_LOTES_RUNBOOK.md) | generar datos de prueba con lotes y vencimientos |
 
 </details>
 
