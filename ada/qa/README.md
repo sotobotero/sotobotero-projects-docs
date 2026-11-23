@@ -16,14 +16,16 @@ flowchart LR
     B["💳 2 · Separados y compras<br/>cartera y cuentas por pagar"]:::paso
     C["🧮 3 · La caja cuadra<br/>el reporte del día"]:::paso
     D(["🏁 4 · El ciclo completo<br/>todo junto, de punta a punta"]):::meta
+    E["🩺 8 · Historia clínica<br/>y RIPS del periodo"]:::paso
 
     A --> B --> C --> D
+    D --> E
 
     classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
     classDef meta fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95
 ```
 
-## Los siete flujos
+## Los ocho flujos
 
 | # | Flujo | Qué queda probado | Documento |
 |---|---|---|---|
@@ -34,6 +36,7 @@ flowchart LR
 | 5 | **El ciclo completo** | compra → venta → separado → fiado → cartera → pago y devolución, con inventario, caja y saldos conciliados | [e2e-ciclo-completo.md](e2e-ciclo-completo.md) |
 | 6 | **Conteo de inventario** | cargar un almacén que no estaba en el sistema, unidades sin soporte y conteo de auditoría | [e2e-conteo-de-inventario.md](e2e-conteo-de-inventario.md) |
 | 7 | **Gimnasio** | reservas y membresías de punta a punta | [e2e-gym-manual-tests.md](e2e-gym-manual-tests.md) |
+| 8 | **Historia clínica y RIPS** | la cita abre la atención, las notas no se reescriben (corrección y anulación firmadas), consentimiento y anexos, y el corte de RIPS con y sin factura | [e2e-historia-clinica-rips.md](e2e-historia-clinica-rips.md) |
 
 El **5** es el que más vale: si ese cuadra, el resto de los módulos están hablando entre ellos. Los flujos 1 a 4 se pueden
 correr sueltos; el 5, solo después.
@@ -44,7 +47,7 @@ correr sueltos; el 5, solo después.
 |---|---|
 | **Restaurante, cafetería, bar** | [montarlo](restaurante-configuracion.md) → [atender una mesa](guia-restaurante.md) → [3 compras](e2e-compras-cuentas-por-pagar.md) |
 | **Joyería, ropa, ferretería, tienda** | [1 producto y venta](e2e-happy-path-inventario-facturacion.md) → [2 cartera](e2e-cartera-separados.md) → [6 conteo](e2e-conteo-de-inventario.md) |
-| **Clínica u odontología** | el módulo clínico se prueba en el Backoffice, no tiene pantallas en Mobile → [2 cartera](e2e-cartera-separados.md) → [4 caja](e2e-reporte-de-caja.md) |
+| **Clínica u odontología** | el módulo clínico se prueba en el Backoffice, no tiene pantallas en Mobile → [8 historia clínica y RIPS](e2e-historia-clinica-rips.md) → [2 cartera](e2e-cartera-separados.md) → [4 caja](e2e-reporte-de-caja.md) |
 | **Gimnasio o centro de servicios** | [7 gimnasio](e2e-gym-manual-tests.md) → [2 cartera](e2e-cartera-separados.md) |
 | **Proveedor que vende en un marketplace** | [1 producto y venta](e2e-happy-path-inventario-facturacion.md) → [cargas de archivo](e2e-cargas-archivo-demo.md) |
 
