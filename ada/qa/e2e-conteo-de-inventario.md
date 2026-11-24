@@ -2,7 +2,7 @@
 
 > **Heredado (2026-11).** Este flujo es anterior al estándar de QA: se conserva como checklist de regresión y se
 > corre tal cual. Si lo reescribes, usa [guia-produccion-etapas.md](guia-produccion-etapas.md) como molde y cámbialo en
-> el [índice](README.md).
+> el [índice](INDEX.md).
 
 > **Se escribe lo que hay, no lo que sumas.** Cuentas la repisa, escribes el total contado y el sistema calcula la
 > diferencia. El documento que genera se sigue llamando **ajuste de inventario (NTINV)** en listados, kardex y

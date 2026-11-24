@@ -1,7 +1,7 @@
 # E2E — Aprobación del pedido público, plato agotado y carrito del catálogo
 
 > **Automático.** Las dos escenas las corre Playwright sobre el arnés del restaurante
-> ([`tests/playwright/restaurant/`](../../tests/playwright/restaurant/README.md)): ADA de este checkout, el tenant de pruebas,
+> (`tests/playwright/restaurant/`): ADA de este checkout, el tenant de pruebas,
 > Keycloak local, el shell con `mf-restaurant` y el catálogo público con `mf-booking`. La tabla de escenas del final se marca a
 > mano cuando alguien las corre; cada fila dice qué spec la prueba.
 >
@@ -9,8 +9,8 @@
 
 | Spec | Qué prueba |
 |---|---|
-| [`restaurant-order-approval.spec.ts`](../../tests/playwright/restaurant/restaurant-order-approval.spec.ts) | Un cliente **anónimo** pide desde el catálogo público; el pedido nace esperando aprobación y **no entra a la cocina**; la bandeja `/restaurante/por-aprobar` muestra la fila con su total y «Solicitud anónima del catálogo»; al abrirla se ven cliente, líneas y total. **Aprobar** la deja aprobada y el pedido entra a la cola de cocina. Un segundo pedido se **rechaza**: sin motivo no deja confirmar y con motivo queda cancelado. Un tercero se aprueba con **«Aprobar y cobrar»** (el bloque de pago compartido) y queda pagado, con su factura. |
-| [`restaurant-dish-soldout.spec.ts`](../../tests/playwright/restaurant/restaurant-dish-soldout.spec.ts) | Desde la cocina se marca el plato agotado **con hora**: la tarjeta queda con `dish-soldout-badge-<productId>` y la hora. En el catálogo público el plato **se sigue viendo** con `catalog-soldout-<id>`, «Pedir» deshabilitado y `order-soldout-blocked` al intentarlo. «Disponible ya» lo devuelve y el plato se vuelve a pedir. **Sin hora** (campo vacío) queda agotado igual y solo el botón lo devuelve. El pedido de mesa que usa se marca y se cancela al final. |
+| `restaurant-order-approval.spec.ts` | Un cliente **anónimo** pide desde el catálogo público; el pedido nace esperando aprobación y **no entra a la cocina**; la bandeja `/restaurante/por-aprobar` muestra la fila con su total y «Solicitud anónima del catálogo»; al abrirla se ven cliente, líneas y total. **Aprobar** la deja aprobada y el pedido entra a la cola de cocina. Un segundo pedido se **rechaza**: sin motivo no deja confirmar y con motivo queda cancelado. Un tercero se aprueba con **«Aprobar y cobrar»** (el bloque de pago compartido) y queda pagado, con su factura. |
+| `restaurant-dish-soldout.spec.ts` | Desde la cocina se marca el plato agotado **con hora**: la tarjeta queda con `dish-soldout-badge-<productId>` y la hora. En el catálogo público el plato **se sigue viendo** con `catalog-soldout-<id>`, «Pedir» deshabilitado y `order-soldout-blocked` al intentarlo. «Disponible ya» lo devuelve y el plato se vuelve a pedir. **Sin hora** (campo vacío) queda agotado igual y solo el botón lo devuelve. El pedido de mesa que usa se marca y se cancela al final. |
 
 Un caso feliz y un caso de error por pieza: el error de la pieza 1 es el **rechazo sin motivo** (no confirma, no envía nada) y el
 de la pieza 2 es **pedir un plato agotado** (el diálogo lo dice y el botón de pedir queda apagado).
@@ -18,7 +18,7 @@ de la pieza 2 es **pedir un plato agotado** (el diálogo lo dice y el botón de 
 ## Datos que necesita
 
 Todo es del tenant de pruebas `e2e_restaurant`; nunca de staging ni de producción. El arnés y el stack completo están en
-[`tests/playwright/restaurant/README.md`](../../tests/playwright/restaurant/README.md).
+`tests/playwright/restaurant/README.md`.
 
 | Dato | Valor por defecto | Cómo se prepara |
 |---|---|---|

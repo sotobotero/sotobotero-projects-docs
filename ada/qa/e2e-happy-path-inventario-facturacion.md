@@ -2,7 +2,7 @@
 
 > **Heredado (2026-11).** Este flujo es anterior al estándar de QA: se conserva como checklist de regresión y se
 > corre tal cual. Si lo reescribes, usa [guia-produccion-etapas.md](guia-produccion-etapas.md) como molde y cámbialo en
-> el [índice](README.md).
+> el [índice](INDEX.md).
 
 > Ejecutar en orden. Cada paso asume que el anterior fue exitoso.
 > Caso orientado a QA funcional manual (sin pruebas de carga ni escenarios de error).

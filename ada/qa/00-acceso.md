@@ -3,7 +3,7 @@
 > **Una dirección. Una contraseña. El resto lo eliges tú.**
 >
 > Esta página es para cualquiera: no hace falta saber de sistemas. Si vienes a probar el producto, entra primero y
-> sigue con el [índice de QA](README.md).
+> sigue con el [índice de QA](INDEX.md).
 
 ## 📍 La llave
 
@@ -88,7 +88,7 @@ flowchart TB
 ```
 
 
-[Reportar un fallo](README.md#cómo-reportar-un-fallo) · [Ver los flujos de prueba](README.md)
+[Reportar un fallo](INDEX.md#si-un-paso-no-da-lo-esperado) · [Ver los flujos de prueba](INDEX.md)
 
 ## 🚪 Las direcciones
 
@@ -114,9 +114,9 @@ Una prueba enviada en producción crea un negocio real.
 
 | Cara | Qué se prueba | Detalle |
 |---|---|---|
-| **Pulso Mobile** | inventario, reservas, mesas y pedidos del restaurante, catálogo del proveedor; se usa en celular | [flujos](README.md#flujos-en-el-orden-que-conviene-probarlos) |
-| **el Backoffice** | facturación y caja, separados y cartera, compras y cuentas por pagar, contabilidad y reportes | [flujos](README.md#flujos-en-el-orden-que-conviene-probarlos) |
-| **Sirius** | que los tableros muestren lo que se acaba de generar (puede tardar unos minutos; solo el negocio con permiso) | [índice de QA](README.md) |
+| **Pulso Mobile** | inventario, reservas, mesas y pedidos del restaurante, catálogo del proveedor; se usa en celular | [flujos](INDEX.md#qué-probar-si-no-hay-un-negocio-concreto) |
+| **el Backoffice** | facturación y caja, separados y cartera, compras y cuentas por pagar, contabilidad y reportes | [flujos](INDEX.md#qué-probar-si-no-hay-un-negocio-concreto) |
+| **Sirius** | que los tableros muestren lo que se acaba de generar (puede tardar unos minutos; solo el negocio con permiso) | [índice de QA](INDEX.md) |
 | **Administración** | alta, aprobación y aprovisionamiento de negocios (lo usa el equipo de plataforma) | [cómo se monta un restaurante](restaurante-configuracion.md) |
 
 </details>

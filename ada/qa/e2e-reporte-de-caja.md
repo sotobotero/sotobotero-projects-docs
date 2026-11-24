@@ -2,12 +2,12 @@
 
 > **Heredado (2026-11).** Este flujo es anterior al estándar de QA: se conserva como checklist de regresión y se
 > corre tal cual. Si lo reescribes, usa [guia-produccion-etapas.md](guia-produccion-etapas.md) como molde y cámbialo en
-> el [índice](README.md).
+> el [índice](INDEX.md).
 
 > **La caja es el dinero real del día, venga del módulo que venga.** Se mira por caja y por rango de fechas, y cada
 > movimiento tiene que salir **una sola vez**.
 
-Paso 0, siempre: [00-acceso.md](00-acceso.md). Qué flujos probar y en qué orden: [README de QA](README.md).
+Paso 0, siempre: [00-acceso.md](00-acceso.md). Qué flujos probar y en qué orden: [README de QA](INDEX.md).
 
 ## 🗺️ La prueba, en cuatro pasos
 

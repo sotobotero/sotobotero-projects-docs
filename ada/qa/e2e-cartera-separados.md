@@ -2,10 +2,10 @@
 
 > **Heredado (2026-11).** Este flujo es anterior al estándar de QA: se conserva como checklist de regresión y se
 > corre tal cual. Si lo reescribes, usa [guia-produccion-etapas.md](guia-produccion-etapas.md) como molde y cámbialo en
-> el [índice](README.md).
+> el [índice](INDEX.md).
 
 Cubre el separado con anticipo (crear, abonar, aplicar saldo a favor, entregar, cancelar), la venta fiada, el límite de
-crédito del cliente y el cobro de cartera. Antes: [README de QA](README.md).
+crédito del cliente y el cobro de cartera. Antes: [README de QA](INDEX.md).
 
 ```mermaid
 flowchart LR

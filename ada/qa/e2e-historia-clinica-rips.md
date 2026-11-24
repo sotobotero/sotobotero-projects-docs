@@ -2,7 +2,7 @@
 
 La historia clínica es un documento legal, no un formulario: lo que se escribió no se borra ni se reescribe, se corrige o
 se anula, y todo queda firmado. Sobre esa historia se arma el **RIPS** del periodo, que es el soporte de cobro de la
-factura. Este recorrido prueba las dos cosas juntas. Antes: [cómo entrar](00-acceso.md) y el [índice de QA](README.md).
+factura. Este recorrido prueba las dos cosas juntas. Antes: [cómo entrar](00-acceso.md) y el [índice de QA](INDEX.md).
 
 > [!IMPORTANT]
 > **Lo que este recorrido NO prueba: el envío contra el validador real del Ministerio.** El envío está hecho y se prueba aquí con
@@ -359,6 +359,6 @@ Para quien descargó el archivo y lo subió a mano al validador. *En la lista de
 
 ## Si un paso no da lo esperado
 
-Se detiene ahí y se reporta con los seis datos del [índice de QA](README.md#si-un-paso-no-da-lo-esperado): flujo y paso,
+Se detiene ahí y se reporta con los seis datos del [índice de QA](INDEX.md#si-un-paso-no-da-lo-esperado): flujo y paso,
 qué hiciste, qué esperabas, qué pasó, captura y hora, y el negocio y usuario usados. Un paso fallido arrastra los
 siguientes, así que no se sigue.
