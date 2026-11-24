@@ -1,5 +1,9 @@
 # E2E manual — Ciclo completo (compra → venta → cartera → proveedor → caja)
 
+> **Heredado (2026-11).** Este flujo es anterior al estándar de QA: se conserva como checklist de regresión y se
+> corre tal cual. Si lo reescribes, usa [guia-produccion-etapas.md](guia-produccion-etapas.md) como molde y cámbialo en
+> el [índice](README.md).
+
 Un solo recorrido que une los flujos anteriores y termina cuadrando **inventario, caja, cartera de clientes y cuentas por
 pagar**. Las pruebas automáticas ya cubren cada regla por separado; este ciclo existe para que una persona compruebe que
 todo cuadra junto y que las pantallas dicen lo mismo. Correrlo después de los flujos individuales y antes de cada despliegue

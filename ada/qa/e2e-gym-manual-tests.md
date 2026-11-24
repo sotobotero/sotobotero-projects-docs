@@ -1,5 +1,9 @@
 # E2E Manual Tests — Caso de uso: Gimnasio
 
+> **Heredado (2026-11).** Este flujo es anterior al estándar de QA: se conserva como checklist de regresión y se
+> corre tal cual. Si lo reescribes, usa [guia-produccion-etapas.md](guia-produccion-etapas.md) como molde y cámbialo en
+> el [índice](README.md).
+
 > Ejecutar en orden. Cada sección asume que la anterior se completó.  
 > Se prueba en el **Backoffice**; direcciones de producción y ensayo en [00-acceso.md](00-acceso.md).
 

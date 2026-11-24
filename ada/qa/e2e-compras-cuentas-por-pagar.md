@@ -1,5 +1,9 @@
 # E2E manual — Compras y cuentas por pagar
 
+> **Heredado (2026-11).** Este flujo es anterior al estándar de QA: se conserva como checklist de regresión y se
+> corre tal cual. Si lo reescribes, usa [guia-produccion-etapas.md](guia-produccion-etapas.md) como molde y cámbialo en
+> el [índice](README.md).
+
 Cubre compras de contado, a crédito y mixtas, abonos a proveedores y su reverso, el cupo de crédito, la devolución al
 proveedor y el cierre del saldo a favor (reembolso o cruce). Antes: [README de QA](README.md). Funcionamiento y reglas:
 `docs/ACCOUNTS_PAYABLE.md`.

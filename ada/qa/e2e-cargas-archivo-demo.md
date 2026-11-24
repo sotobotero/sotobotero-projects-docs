@@ -1,5 +1,9 @@
 # Demo — Cargar datos desde un archivo
 
+> **Heredado (2026-11).** Este flujo es anterior al estándar de QA: se conserva como checklist de regresión y se
+> corre tal cual. Si lo reescribes, usa [guia-produccion-etapas.md](guia-produccion-etapas.md) como molde y cámbialo en
+> el [índice](README.md).
+
 Guion corto. Un solo mensaje: **el cliente llena una plantilla con lo mínimo y ADA hace el resto**. Antes: [README de QA](README.md).
 
 Regla de la presentación: **nunca explicar una pantalla**. Si hace falta explicarla, se salta.

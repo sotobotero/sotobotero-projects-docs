@@ -1,5 +1,9 @@
 # Comprobar que el reporte de caja cuadra
 
+> **Heredado (2026-11).** Este flujo es anterior al estándar de QA: se conserva como checklist de regresión y se
+> corre tal cual. Si lo reescribes, usa [guia-produccion-etapas.md](guia-produccion-etapas.md) como molde y cámbialo en
+> el [índice](README.md).
+
 > **La caja es el dinero real del día, venga del módulo que venga.** Se mira por caja y por rango de fechas, y cada
 > movimiento tiene que salir **una sola vez**.
 
