@@ -104,7 +104,9 @@ flowchart TB
 | 🔧 **Administración de plataforma** — crear y aprobar negocios (equipo de plataforma) | [ada.sotobotero.com/platform-admin](https://ada.sotobotero.com/platform-admin) | [stg-ada…/platform-admin](https://stg-ada.sotobotero.com/platform-admin) |
 | ✍️ **Alta de negocio** — el formulario público para registrarse | [ada.sotobotero.com/empezar](https://ada.sotobotero.com/empezar) | [stg-ada…/empezar](https://stg-ada.sotobotero.com/empezar) |
 | 🔑 **Acceso** — la pantalla de la contraseña | [sso.sotobotero.com](https://sso.sotobotero.com) | la misma |
-| **Sitio del negocio** — el marketplace público | `<negocio>.sotobotero.com` | solo con host registrado en el maestro de ensayo |
+| 🛒 **Sitio del negocio** — el marketplace público: catálogo, carrito y seguimiento del pedido | `<negocio>.sotobotero.com` | el negocio de pruebas: [la-espiga-dora.sotobotero.com](https://la-espiga-dora.sotobotero.com) · el marketplace Toki: [stg-toki.sotobotero.com](https://stg-toki.sotobotero.com) |
+
+En el marketplace la API vive bajo `/ADA_ENTERPISE_CORE/`: `https://la-espiga-dora.sotobotero.com/ADA_ENTERPISE_CORE/restapi/v1/public/...`.
 
 **Mira la barra de direcciones antes de llenar algo:** si dice `stg-ada`, estás en ensayo; si dice `ada`, en producción.
 Una prueba enviada en producción crea un negocio real.
