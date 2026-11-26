@@ -6,6 +6,9 @@
 > Las direcciones y el acceso están en [00-acceso.md](00-acceso.md). Lo que hay que dejar montado antes de abrir, en
 > [cómo dejar listo el restaurante](restaurante-configuracion.md).
 
+**Para probar, entra por tu papel:** [dueño](e2e-restaurante-dueno.md) · [mesero](e2e-restaurante-mesero.md) ·
+[cocina](e2e-restaurante-cocina.md) · [comensal](e2e-restaurante-comensal.md).
+
 ## 🗺️ La foto completa
 
 Cuatro bloques. El primero lo deja listo el dueño; los dos siguientes los hace el equipo cada día; el último no lo
@@ -38,7 +41,7 @@ Ver el paso a paso: [cómo dejar listo el restaurante](restaurante-configuracion
 
 Tres cosas, y sin las tres no hay servicio:
 
-- **Qué se publica.** Los grupos de la carta se encienden por canal, por sede o por mesa; lo que no se enciende no
+- **Qué se publica.** Los grupos de la carta se encienden por canal, por sucursal o por mesa; lo que no se enciende no
   aparece en el celular del mesero. Detalle: [qué se publica](restaurante-configuracion.md).
 - **Fotos y precios.** Cada plato es una tarjeta con foto, precio y grupo. Sin foto se vende peor y el mesero duda.
 - **Recetas.** Qué gasta cada plato. Es lo que hace que el inventario baje solo: los tres caminos están abajo, y el
@@ -50,6 +53,29 @@ Tres cosas, y sin las tres no hay servicio:
 - Abre la mesa **sin escribir nada**: los platos más pedidos salen primero, en tarjetas.
 - Cada ronda se envía a cocina y **lleva su número**: la segunda no se mezcla con la primera.
 - Dos toques por plato, con una mano y sin teclado.
+
+## 📱 El comensal pide desde su mesa
+
+```mermaid
+---
+title: Del QR de la mesa a la cocina
+---
+flowchart LR
+    Q["🔳 Escanea<br/>su mesa"]:::web
+    P["🛒 Elige y<br/>envía"]:::web
+    C["✅ El local<br/>confirma"]:::paso
+    K["👨‍🍳 Entra a<br/>la cocina"]:::paso
+
+    Q --> P --> C --> K
+
+    classDef web fill:#f7f5ff,stroke:#cfc3f2,stroke-width:1px,color:#4c1d95
+    classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
+```
+
+- **Nada entra a cocina sin que alguien del local lo confirme.**
+- Se entra solo con el QR o el enlace de la mesa; también puede llamar al mesero y compartir la mesa.
+- **Cada mesa puede tener su mesero.** Quien la abre la atiende hasta cobrarla; una mesa sin mesero la responde
+  también la cocina.
 
 ## 🗓️ Las reservas que llegan del marketplace
 
@@ -72,10 +98,12 @@ flowchart LR
     classDef paso fill:#f3faf4,stroke:#a7d9b4,stroke-width:1px,color:#1d4d2b
 ```
 
-- La lista muestra **quién reservó, a qué hora y cuántos comensales**. Sin fecha se ven todas las de hoy en adelante; con
-  fecha, solo ese día.
-- **Sentar** pide una mesa libre y la ocupa. Desde ese momento el pedido es uno normal: se toma, va a cocina y se cobra.
-- Una reserva no ocupa la mesa por sí sola: **la mesa se ocupa cuando se sienta**.
+- La lista muestra **quién reservó, a qué hora y cuántos comensales**, de su sucursal o de todas. Sin fecha se ven todas
+  las que nadie ha sentado, las atrasadas incluidas; con fecha, solo ese día.
+- **Sentar** pide una mesa libre de la sucursal reservada. Desde ese momento el pedido es uno normal: se toma, va a
+  cocina y se cobra.
+- Una mesa asignada a una reserva **deja de recibir pedidos del teléfono durante su franja** (el turno más el tiempo
+  entre turnos). Una reserva cancelada no la ocupa.
 
 > [!IMPORTANT]
 > Para que lleguen reservas tiene que estar cargado el servicio *Reserva* (un producto de tipo servicio con empleado y
@@ -172,7 +200,7 @@ Detalle: [compras y cuentas por pagar](e2e-compras-cuentas-por-pagar.md).
 
 | Tema | Estado | Qué decir |
 |---|---|---|
-| Domicilios | no está | el módulo atiende **mesa**; el domicilio se evalúa |
+| Domicilios y recogidas | funciona | el pedido del catálogo se aprueba y se sigue en *Domicilios* |
 | Reservas | funciona | el cliente reserva en el sitio del negocio y el pedido espera en *Mesas → Reservas*; el negocio necesita el servicio *Reserva* cargado |
 | Comandas impresas | construido | sale en papel de 80 mm; requiere el agente de impresión instalado en el local |
 
@@ -180,4 +208,4 @@ Detalle: [compras y cuentas por pagar](e2e-compras-cuentas-por-pagar.md).
 
 La guía de montaje está aparte: [cómo dejar listo el restaurante](restaurante-configuracion.md).
 
-**Última revisión:** 2026-11-19.
+**Última revisión:** 2026-11-25.

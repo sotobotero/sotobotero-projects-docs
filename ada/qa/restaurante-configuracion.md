@@ -25,14 +25,16 @@ flowchart LR
 
 ## 🪑 Las mesas
 
-- Se crean con *Nueva mesa*: **nombre y número de puestos**.
+- Se crean con *Nueva mesa*, en la pestaña *Mesas y QR*: **nombre y número de puestos**.
+- Cada mesa puede tener su **mesero**; sin mesero, la responde también la cocina.
+- Con *Pedir desde la mesa* encendido, cada una tiene su **QR** para imprimir, copiar o cambiar.
 - Una mesa se **activa o desactiva; nunca se borra**. La que ya se usó conserva su historia; la desactivada
   simplemente desaparece del salón.
 
 ## 📖 Qué se publica
 
 La **matriz de carta** decide qué ve el cliente y qué ve el mesero: un grupo de la carta se enciende **por canal, por
-sede o por mesa**.
+sucursal o por mesa**.
 
 - Lo que se hereda de arriba sale **bloqueado**: se enciende donde de verdad aplica.
 - Un grupo apagado no existe para el mesero: no aparece en el celular.
@@ -50,7 +52,7 @@ Cada plato es una **tarjeta**: nombre, grupo, precio y foto.
 | Quién | Qué puede hacer |
 |---|---|
 | **Mesero** | *Mesas* y *Pedidos*: abrir mesa, tomar el pedido, cobrar |
-| **Cocina** | *Cocina*: empezar, terminar y cancelar platos |
+| **Cocina** | *Cocina*: empezar y terminar platos, marcar agotados y responder las mesas sin mesero |
 | **Dueño o administrador** | *Configurar*: mesas, matriz de carta y platos |
 
 Y **una caja abierta** antes del primer cobro: sin caja el cobro no se puede cerrar.
@@ -63,4 +65,4 @@ ejemplo de punta a punta.
 
 Cuando ya esté montado, el día a día es la otra guía: [cómo atender el salón](guia-restaurante.md).
 
-**Última revisión:** 2026-11-19.
+**Última revisión:** 2026-11-25.

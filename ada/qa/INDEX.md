@@ -12,7 +12,7 @@
 
 | El negocio es… | Corre esto, en este orden |
 |---|---|
-| **Restaurante, cafetería o bar** | [guia-restaurante.md](guia-restaurante.md) · [montarlo](restaurante-configuracion.md) · [aprobar el pedido del catálogo y el plato agotado](e2e-restaurante-aprobacion-y-agotado.md) |
+| **Restaurante, cafetería o bar** | [guia-restaurante.md](guia-restaurante.md) → por papel: [dueño](e2e-restaurante-dueno.md) → [mesero](e2e-restaurante-mesero.md) → [cocina](e2e-restaurante-cocina.md) → [comensal](e2e-restaurante-comensal.md) → [aprobación y plato agotado](e2e-restaurante-aprobacion-y-agotado.md) |
 | **Manufactura, confección o algo que pase por estaciones** | [guia-produccion-etapas.md](guia-produccion-etapas.md) → [conteo de inventario](e2e-conteo-de-inventario.md) *(heredado)* |
 | **Joyería, ropa, ferretería o tienda** | [producto y venta](e2e-happy-path-inventario-facturacion.md) *(heredado)* → [separados y cartera](e2e-cartera-separados.md) *(heredado)* → [conteo de inventario](e2e-conteo-de-inventario.md) *(heredado)* |
 | **Clínica u odontología** | [historia clínica y RIPS](e2e-historia-clinica-rips.md) → [separados y cartera](e2e-cartera-separados.md) *(heredado)* → [la caja cuadra](e2e-reporte-de-caja.md) *(heredado)*. El módulo clínico solo vive en el Backoffice |
@@ -31,6 +31,10 @@ Estas son las guías **vigentes**: ya están escritas con el estándar de hoy (g
 |---|---|---|
 | 1 | **Entrar y saber qué cara es cada una** | [00-acceso.md](00-acceso.md) |
 | 2 | **Montar y atender un restaurante**: carta, mesas, cocina, cobro | [guia-restaurante.md](guia-restaurante.md) · [montarlo](restaurante-configuracion.md) |
+| 2a | **Dueño**: mesas, mesero de cada mesa, QR, carta y platos | [e2e-restaurante-dueno.md](e2e-restaurante-dueno.md) |
+| 2b | **Mesero**: relevo, pedidos del teléfono, cobro, sucursales y domicilios | [e2e-restaurante-mesero.md](e2e-restaurante-mesero.md) |
+| 2c | **Cocina**: la cola y las mesas sin mesero | [e2e-restaurante-cocina.md](e2e-restaurante-cocina.md) |
+| 2d | **Comensal**: QR, pedido, llamar, compartir la mesa y pedir desde fuera | [e2e-restaurante-comensal.md](e2e-restaurante-comensal.md) |
 | 3 | **Seguir una prenda por la planta**: ruta, paquetes, etapas y WIP | [guia-produccion-etapas.md](guia-produccion-etapas.md) |
 | 4 | **El día completo del negocio**, en lenguaje llano | [guia-ciclo-del-negocio.md](guia-ciclo-del-negocio.md) |
 | 5 | **Historia clínica y RIPS**: la cita abre la atención, las notas no se reescriben (corrección y anulación firmadas), consentimiento y anexos, y el corte de RIPS con y sin factura | [e2e-historia-clinica-rips.md](e2e-historia-clinica-rips.md) |
